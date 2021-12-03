@@ -32,20 +32,23 @@ func main() {
 
 	for {
 		entry, _ := entryReader.Next()
-    // fmt.Println("Entry:")
-    // fmt.Println(entry)
-    // fmt.Println("")
     if entry == nil {
       break
     }
 		if entry != nil && entry.Tag == dwarf.TagBaseType {
 			fmt.Println("Found a struct")
+      name := ""
+      var byte_size int64
 			for _, field := range entry.Field {
-        fmt.Printf("Found an attribute: %s\n", field.Attr)
         if field.Attr == dwarf.AttrName {
-          fmt.Println(field.Val.(string))
+          name = field.Val.(string)
+          // fmt.Println(field.Val.(string))
+        }
+        if field.Attr == dwarf.AttrByteSize {
+          byte_size = field.Val.(int64)
         }
 			}
+      fmt.Printf("Name: %s \n Size: %d \n\n", name, byte_size)
 		}
 	}
 }
