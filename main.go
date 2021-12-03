@@ -10,6 +10,12 @@ import (
 	"os"
 )
 
+func parse_location(location []uint8) {
+}
+
+func follow_typedef(entry *dwarf.Entry) {
+}
+
 func print_die_info(entry *dwarf.Entry) {
   fmt.Printf("Found a %s\n", entry.Tag)
   fmt.Printf("  Attributes:\n")
