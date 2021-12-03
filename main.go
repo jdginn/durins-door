@@ -32,10 +32,11 @@ func main() {
 
 	for {
 		entry, _ := entryReader.Next()
-    if entry == nil {
-      break
-    }
-		if entry != nil && entry.Tag == dwarf.TagBaseType {
+    // if entry == nil {
+    //   fmt.Println("Encountered a nil entry")
+    //   break
+    // }
+		if entry.Tag == dwarf.TagBaseType {
 			fmt.Println("Found a struct")
       name := ""
       var byte_size int64
