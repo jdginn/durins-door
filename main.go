@@ -15,14 +15,15 @@ func parse_location(location []uint8) int64 {
   // --> This somehow communicates a format?
   // Build the last slice from right to left
   location = location[1:]
-  for i := 0; i < len(location)/2; i++ {
-    j := len(location) - i - 1
-    location[i], location[j] = location[j], location[i]
-  }
+  // for i := 0; i < len(location)/2; i++ {
+  //   j := len(location) - i - 1
+  //   location[i], location[j] = location[j], location[i]
+  // }
+  fmt.Printf("Flipped slice: %v\n", location)
   var location_as_int int64
   location_as_int = 0
   for i := 0; i < len(location); i++ {
-    location_as_int += int64(location[i]) << 8
+    location_as_int += int64(location[i]) << (8 * i)
   }
   return location_as_int
 }
