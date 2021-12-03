@@ -19,9 +19,9 @@ func follow_typedef(entry *dwarf.Entry) {
 // JDG TODO: make sure I'm using the right DT_AT names here
 func print_die_info(entry *dwarf.Entry) {
   fmt.Printf("Found a %s\n", entry.Tag)
-  fmt.Printf("  Attributes:\n")
+  // fmt.Printf("  Attributes:\n")
   for _, field := range entry.Field {
-    fmt.Printf("      %s\n", field.Attr)
+    // fmt.Printf("      %s\n", field.Attr)
     if field.Attr == dwarf.AttrName {
       name := field.Val.(string)
       fmt.Printf("  DW_AT_name: %s\n", name)
@@ -44,7 +44,7 @@ func print_die_info(entry *dwarf.Entry) {
     }
     if field.Attr == dwarf.AttrType{
       type_die := field.Val
-      fmt.Printf("  DW_AT_type_die: %v\n", type_die)
+      fmt.Printf("  DW_AT_type_die offset?: %v\n", type_die)
     }
   }
 }
