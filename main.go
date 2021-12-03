@@ -16,6 +16,7 @@ func parse_location(location []uint8) {
 func follow_typedef(entry *dwarf.Entry) {
 }
 
+// JDG TODO: make sure I'm using the right DT_AT names here
 func print_die_info(entry *dwarf.Entry) {
   fmt.Printf("Found a %s\n", entry.Tag)
   fmt.Printf("  Attributes:\n")
@@ -32,6 +33,18 @@ func print_die_info(entry *dwarf.Entry) {
     if field.Attr == dwarf.AttrLocation{
       location := field.Val
       fmt.Printf("  DW_AT_location: %v\n", location)
+    }
+    if field.Attr == dwarf.AttrDataMemberLoc{
+      location := field.Val
+      fmt.Printf("  DW_AT_data_member_location: %v\n", location)
+    }
+    if field.Attr == dwarf.AttrCompDir {
+      comp_dir := field.Val
+      fmt.Printf("  DW_AT_comp_dir: %v\n", comp_dir)
+    }
+    if field.Attr == dwarf.AttrType{
+      type_die := field.Val
+      fmt.Printf("  DW_AT_type_die: %v\n", type_die)
     }
   }
 }
