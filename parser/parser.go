@@ -21,23 +21,23 @@ func ParseLocation(location []uint8) int64 {
 }
 
 func GetTypeDie(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
-  var typeDie *dwarf.Entry
-  for _, field := range entry.Field{
-    if field.Attr == dwarf.AttrType {
-      currOffset := entry.Offset
-      typeDieOffset := field.Val.(dwarf.Offset)
-      fmt.Printf("  DW_AT_type_die: %v\n", typeDieOffset)
-      fmt.Printf("  --curr_offset: %v\n", currOffset)
-      reader.Seek(typeDieOffset)
-      typeDie, _ := reader.Next()
-      // Restore us to the offset we were reading before we jumped to follow the type
-      fmt.Printf("  --Restoring offset to %v\n", currOffset)
-      reader.Seek(currOffset)
-      reader.Next()
-      return typeDie
-    }
-  }
-  return typeDie
+	var typeDie *dwarf.Entry
+	for _, field := range entry.Field {
+		if field.Attr == dwarf.AttrType {
+			currOffset := entry.Offset
+			typeDieOffset := field.Val.(dwarf.Offset)
+			fmt.Printf("  DW_AT_type_die: %v\n", typeDieOffset)
+			fmt.Printf("  --curr_offset: %v\n", currOffset)
+			reader.Seek(typeDieOffset)
+			typeDie, _ := reader.Next()
+			// Restore us to the offset we were reading before we jumped to follow the type
+			fmt.Printf("  --Restoring offset to %v\n", currOffset)
+			reader.Seek(currOffset)
+			reader.Next()
+			return typeDie
+		}
+	}
+	return typeDie
 }
 
 // JDG TODO: make sure I'm using the right DT_AT names here
@@ -65,7 +65,7 @@ func PrintDieInfo(reader *dwarf.Reader, entry *dwarf.Entry) {
 			fmt.Printf("  DW_AT_comp_dir: %s\n", comp_dir)
 		}
 		if field.Attr == dwarf.AttrType {
-      fmt.Printf("  DW_AT_type_die at offset: %v\n", field.Val)
+			fmt.Printf("  DW_AT_type_die at offset: %v\n", field.Val)
 		}
 	}
 }
@@ -88,5 +88,5 @@ func GetReader(filename string) *dwarf.Reader {
 
 	entryReader := dwarfData.Reader()
 
-  return entryReader
+	return entryReader
 }
