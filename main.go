@@ -2,49 +2,47 @@ package main
 
 import (
 	"debug/dwarf"
-	// "debug/elf"
 	"debug/macho"
 	"fmt"
-	// "io/ioutil"
 	"log"
 	"os"
 )
 
-func parse_location(location []uint8) int64 {
+func parseLocation(location []uint8) int64 {
 	// Ignore the first entry in the slice
 	// --> This somehow communicates a format?
 	// Build the last slice from right to left
 	location = location[1:]
-	var location_as_int int64
-	location_as_int = 0
+	var locationAsInt int64
+	locationAsInt = 0
 	for i := 0; i < len(location); i++ {
-		location_as_int += int64(location[i]) << (8 * i)
+		locationAsInt += int64(location[i]) << (8 * i)
 	}
-	return location_as_int
+	return locationAsInt
 }
 
-func get_type_die(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
-  var type_die *dwarf.Entry
+func getTypeDie(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
+  var typeDie *dwarf.Entry
   for _, field := range entry.Field{
     if field.Attr == dwarf.AttrType {
-      curr_offset := entry.Offset
-      type_die_offset := field.Val.(dwarf.Offset)
-      fmt.Printf("  DW_AT_type_die: %v\n", type_die_offset)
-      fmt.Printf("  --curr_offset: %v\n", curr_offset)
-      reader.Seek(type_die_offset)
-      type_die, _ := reader.Next()
+      currOffset := entry.Offset
+      typeDieOffset := field.Val.(dwarf.Offset)
+      fmt.Printf("  DW_AT_type_die: %v\n", typeDieOffset)
+      fmt.Printf("  --curr_offset: %v\n", currOffset)
+      reader.Seek(typeDieOffset)
+      typeDie, _ := reader.Next()
       // Restore us to the offset we were reading before we jumped to follow the type
-      fmt.Printf("  --Restoring offset to %v\n", curr_offset)
-      reader.Seek(curr_offset)
+      fmt.Printf("  --Restoring offset to %v\n", currOffset)
+      reader.Seek(currOffset)
       reader.Next()
-      return type_die
+      return typeDie
     }
   }
-  return type_die
+  return typeDie
 }
 
 // JDG TODO: make sure I'm using the right DT_AT names here
-func print_die_info(reader *dwarf.Reader, entry *dwarf.Entry) {
+func printDieInfo(reader *dwarf.Reader, entry *dwarf.Entry) {
 	fmt.Printf("Found a %s\n", entry.Tag)
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrName {
@@ -57,7 +55,7 @@ func print_die_info(reader *dwarf.Reader, entry *dwarf.Entry) {
 		}
 		if field.Attr == dwarf.AttrLocation {
 			location := field.Val.([]uint8)
-			fmt.Printf("  DW_AT_location: %x\n", parse_location(location))
+			fmt.Printf("  DW_AT_location: %x\n", parseLocation(location))
 		}
 		if field.Attr == dwarf.AttrDataMemberLoc {
 			location := field.Val
@@ -98,6 +96,6 @@ func main() {
 			fmt.Println("Encountered a nil entry")
 			break
 		}
-		print_die_info(entryReader, entry)
+		printDieInfo(entryReader, entry)
 	}
 }
