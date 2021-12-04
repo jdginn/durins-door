@@ -54,7 +54,7 @@ func PrintDieInfo(reader *dwarf.Reader, entry *dwarf.Entry) {
 		}
 		if field.Attr == dwarf.AttrLocation {
 			location := field.Val.([]uint8)
-			fmt.Printf("  DW_AT_location: %x\n", parseLocation(location))
+			fmt.Printf("  DW_AT_location: %x\n", ParseLocation(location))
 		}
 		if field.Attr == dwarf.AttrDataMemberLoc {
 			location := field.Val
