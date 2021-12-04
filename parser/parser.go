@@ -41,7 +41,7 @@ func GetTypeDie(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
 }
 
 // JDG TODO: make sure I'm using the right DT_AT names here
-func PrintDieInfo(reader *dwarf.Reader, entry *dwarf.Entry) {
+func PrintDieInfo(entry *dwarf.Entry) {
 	fmt.Printf("Found a %s\n", entry.Tag)
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrName {
