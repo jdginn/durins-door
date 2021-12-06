@@ -65,8 +65,6 @@ func main() {
 			entryStack.Push(entry.Offset)
 			entry = parser.GetTypeDie(entryReader, entry)
 			parser.PrintDieInfo(entry)
-    case "children":
-      entryStack.Push(entry.Offset)
 		case "back":
 			if entryStack.Len() == 0 {
 				fmt.Println("No context to go backwards to")

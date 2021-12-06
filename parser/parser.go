@@ -51,15 +51,6 @@ func GetTypeDie(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
 	return typeDie
 }
 
-func GetFirstChild(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
-  if !entry.Children {
-    fmt.Println("No children to return; doing nothing")
-    return entry
-  }
-  // entry.Fiel
-  return entry
-}
-
 func ListAllAttributes(entry *dwarf.Entry) {
   fmt.Println("All fields in this entry:")
   for _, field := range entry.Field {
@@ -69,7 +60,7 @@ func ListAllAttributes(entry *dwarf.Entry) {
 
 // JDG TODO: make sure I'm using the right DT_AT names here
 func PrintDieInfo(entry *dwarf.Entry) {
-  fmt.Printf("Entry, Tag: %s\n", entry.Tag)
+  fmt.Printf("Tag: %s\n", entry.Tag)
   fmt.Printf("  Children: %v\n", entry.Children)
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrName {
