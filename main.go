@@ -1,13 +1,27 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+  "github.com/c-bata/go-prompt"
 	"os"
-  "strings"
 )
 
 import "github.com/jdginn/dwarf-experiments/parser"
+
+func completer(d prompt.Document) []prompt.Suggest { 
+  s := []prompt.Suggest{
+    {Text: "help", Description: "View help documentation"},
+    {Text: "quit", Description: "Display current DIE's type DIE"},
+    {Text: "print", Description: "Display current DIE"},
+    {Text: "next", Description: "Advance to the next DIE in the current context"},
+    {Text: "type_die", Description: "Move context to this DIE's type DIE"},
+    // WIP, unimplemented
+    // JDG TODO: need to store a stack of entry pointers
+    // JDG TODO: how do we reset the reader to the appropriate context for an entry?
+    {Text: "back", Description: "Move context back to the previous DIE we were targeting"},
+  }
+  return prompt.FilterHasSuffix(s, d.GetWordBeforeCursor(), true)
+}
 
 func main() {
 	filename := os.Args[1]
@@ -18,34 +32,36 @@ func main() {
 	entry, _ := entryReader.Next()
 	parser.PrintDieInfo(entry)
 
-	r := bufio.NewReader(os.Stdin)
-
 	// Parse input from the user
 	for {
-		fmt.Printf("(Enter command) > ")
-		command, _ := r.ReadString('\n')
-    command = strings.TrimSpace(command)
+    command := prompt.Input("> ", completer)
 		switch command {
-    case "h":
+    case "help":
     {
         fmt.Println("Supported commands are:")
-        fmt.Println("  h: display this message")
-        fmt.Println("  n: iterate to next DIE in the current context")
-        fmt.Println("  t: display this DIE's type DIE")
+        fmt.Println("  help: display this message")
+        fmt.Println("  quit: quit")
+        fmt.Println("  next: iterate to next DIE in the current context")
+        fmt.Println("  type: display this DIE's type DIE")
       }
-		case "n":
+    case "quit":
+      return
+    case "print":
+      parser.PrintDieInfo(entry)
+		case "next":
 			{
 				if entry == nil {
 					fmt.Println("Encountered a nil entry")
 					break
 				}
-				entry, _ := entryReader.Next()
+				entry, _ = entryReader.Next()
 				parser.PrintDieInfo(entry)
 			}
-    case "t":
+    case "type":
       typeDie := parser.GetTypeDie(entryReader, entry) 
       parser.PrintDieInfo(typeDie)
+    case "back":
+      fmt.Println("back is not yet implemented")
 		}
-
 	}
 }
