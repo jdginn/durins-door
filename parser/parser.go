@@ -7,6 +7,15 @@ import (
 	"log"
 )
 
+func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
+  for _, field := range entry.Field {
+    if field.Attr == attr {
+      return true
+    }
+  }
+  return false
+}
+
 func ParseLocation(location []uint8) int64 {
 	// Ignore the first entry in the slice
 	// --> This somehow communicates a format?
@@ -21,17 +30,21 @@ func ParseLocation(location []uint8) int64 {
 }
 
 func GetTypeDie(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
+  if !hasAttr(entry, dwarf.AttrType) {
+    fmt.Println("This DIE does not have a type DIE - returning it as-is")
+    return entry
+  }
 	var typeDie *dwarf.Entry
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrType {
 			currOffset := entry.Offset
 			typeDieOffset := field.Val.(dwarf.Offset)
 			fmt.Printf("  DW_AT_type_die: %v\n", typeDieOffset)
-			fmt.Printf("  --curr_offset: %v\n", currOffset)
+			fmt.Printf("  >>curr_offset: %v\n", currOffset)
 			reader.Seek(typeDieOffset)
 			typeDie, _ := reader.Next()
 			// Restore us to the offset we were reading before we jumped to follow the type
-			fmt.Printf("  --Restoring offset to %v\n", currOffset)
+			fmt.Printf("  >>Restoring offset to %v\n", currOffset)
 			reader.Seek(currOffset)
 			reader.Next()
 			return typeDie
