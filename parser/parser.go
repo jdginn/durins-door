@@ -16,6 +16,10 @@ func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
   return false
 }
 
+func SetContextToThisEntry(reader *dwarf.Reader, entry *dwarf.Entry) {
+  reader.Seek(entry.Offset)
+}
+
 func ParseLocation(location []uint8) int64 {
 	// Ignore the first entry in the slice
 	// --> This somehow communicates a format?
@@ -37,25 +41,36 @@ func GetTypeDie(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
 	var typeDie *dwarf.Entry
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrType {
-			currOffset := entry.Offset
 			typeDieOffset := field.Val.(dwarf.Offset)
 			fmt.Printf("  DW_AT_type_die: %v\n", typeDieOffset)
-			fmt.Printf("  >>curr_offset: %v\n", currOffset)
 			reader.Seek(typeDieOffset)
 			typeDie, _ := reader.Next()
-			// Restore us to the offset we were reading before we jumped to follow the type
-			fmt.Printf("  >>Restoring offset to %v\n", currOffset)
-			reader.Seek(currOffset)
-			reader.Next()
 			return typeDie
 		}
 	}
 	return typeDie
 }
 
+func GetFirstChild(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
+  if !entry.Children {
+    fmt.Println("No children to return; doing nothing")
+    return entry
+  }
+  // entry.Fiel
+  return entry
+}
+
+func ListAllAttributes(entry *dwarf.Entry) {
+  fmt.Println("All fields in this entry:")
+  for _, field := range entry.Field {
+    fmt.Printf("  %v\n", field.Attr)
+  }
+}
+
 // JDG TODO: make sure I'm using the right DT_AT names here
 func PrintDieInfo(entry *dwarf.Entry) {
-	fmt.Printf("Found a %s\n", entry.Tag)
+  fmt.Printf("Entry, Tag: %s\n", entry.Tag)
+  fmt.Printf("  Children: %v\n", entry.Children)
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrName {
 			name := field.Val.(string)
