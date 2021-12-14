@@ -20,18 +20,25 @@ func TestGetReader(t *testing.T) {
 	}
 }
 
-func TestGetEntry(t *testing.T) {
+func testGetEntry(t *testing.T, requestedName string) {
 	reader, _ := GetReader(testcaseFilename)
-  // Trivial case to find a top-level entry
-  entry, err := GetEntry(reader, "formula_1_teams")
+  entry, err := GetEntry(reader, requestedName)
   if err != nil {
-    t.Log("Error finding formula_1_teams")
-    t.Fail()
+    t.Fatal("Error locating entry", entry)
   }
-  entryName := entry.AttrField(dwarf.AttrName).Val
-  if entryName != "formula_1_teams" {
-    t.Fatal("Found the wrong entry: expected formula_1_teams but founds", entryName)
+  foundName := entry.AttrField(dwarf.AttrName).Val
+  if foundName != requestedName {
+    t.Log("Found the wrong entry.")
+    t.Log("  Requested entry: ", requestedName)
+    t.Log("  Found entry: ", foundName)
   }
+  reader.Seek(0)
+}
+
+func TestGetEntry(t *testing.T) {
+  testGetEntry(t, "formula_1_teams")
+  testGetEntry(t, "main.cpp")
+  // testGetEntry(t, "Driver")
 }
 
 func TestHasAttr(t *testing.T) {
