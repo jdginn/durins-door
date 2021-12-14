@@ -24,7 +24,7 @@ func testGetEntry(t *testing.T, requestedName string) {
 	reader, _ := GetReader(testcaseFilename)
   entry, err := GetEntry(reader, requestedName)
   if err != nil {
-    t.Fatal("Error locating entry", entry)
+    t.Fatal("Error locating entry", err)
   }
   foundName := entry.AttrField(dwarf.AttrName).Val
   if foundName != requestedName {
@@ -35,10 +35,21 @@ func testGetEntry(t *testing.T, requestedName string) {
   reader.Seek(0)
 }
 
+func shouldFailGetEntry(t *testing.T, requestedName string, errorString string) {
+	reader, _ := GetReader(testcaseFilename)
+  _, err := GetEntry(reader, requestedName)
+  if err == nil {
+    t.Fatal("Should have failed locating entry", requestedName)
+  }
+  reader.Seek(0)
+}
+
 func TestGetEntry(t *testing.T) {
   testGetEntry(t, "formula_1_teams")
   testGetEntry(t, "main.cpp")
-  // testGetEntry(t, "Driver")
+  testGetEntry(t, "drivers")
+  testGetEntry(t, "Driver")
+  shouldFailGetEntry(t, "badname", "entry could not be found")
 }
 
 func TestHasAttr(t *testing.T) {

@@ -3,6 +3,7 @@ package parser
 import (
 	"debug/dwarf"
 	"debug/macho"
+  "errors"
 	"fmt"
 )
 
@@ -27,6 +28,15 @@ func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
   fmt.Printf("Locating %s", name)
   for {
     e, err := reader.Next()
+    if err != nil {
+      return nil, err
+    }
+    if e == nil {
+      return nil, errors.New("entry could not be found")
+    }
+    if e.AttrField(dwarf.AttrName) == nil {
+      continue
+    }
     if e.AttrField(dwarf.AttrName).Val == name {
       return e, err
     }
