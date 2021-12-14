@@ -22,10 +22,8 @@ func GetReader(filename string) (*dwarf.Reader, error) {
 }
 
 // Search for an entry matching a requested name
-//
-// TODO: does not yet support arrays or elements within a struct
 func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
-  fmt.Printf("Locating %s", name)
+  fmt.Printf("Locating %s\n", name)
   for {
     e, err := reader.Next()
     if err != nil {
@@ -114,10 +112,10 @@ func ParseLocation(location []uint8) int64 {
 
 // Return the entry defining the type for a given entry. Returns self if
 // no such entry can be found. Leaves the reader at the new entry.
-func GetTypeDie(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
+func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
 	if !hasAttr(entry, dwarf.AttrType) {
 		fmt.Println("This entry does not have a type entry - returning it as-is")
-		return entry
+		return entry, nil
 	}
 	var typeDie *dwarf.Entry
 	for _, field := range entry.Field {
@@ -126,10 +124,10 @@ func GetTypeDie(reader *dwarf.Reader, entry *dwarf.Entry) *dwarf.Entry {
 			fmt.Printf("  DW_AT_type_die: %v\n", typeDieOffset)
 			reader.Seek(typeDieOffset)
 			typeDie, _ := reader.Next()
-			return typeDie
+			return typeDie, nil
 		}
 	}
-	return typeDie
+	return typeDie, nil
 }
 
 // func GetType(reader *dwarf.Type, entry *dwarf.Entry) *dwarf.Type {

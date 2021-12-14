@@ -66,7 +66,7 @@ func main() {
       reader.SkipChildren()
 		case "type_die":
 			entryStack.Push(entry.Offset)
-			entry = parser.GetTypeDie(reader, entry)
+			entry = parser.GetTypeEntry(reader, entry)
 			parser.PrintEntryInfo(entry)
 		case "type":
       if entry.Tag == dwarf.TagTypedef {
