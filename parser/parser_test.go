@@ -24,15 +24,15 @@ func testGetEntry(t *testing.T, requestedName string) {
 	reader, _ := GetReader(testcaseFilename)
   entry, err := GetEntry(reader, requestedName)
   if err != nil {
-    t.Fatal("Error locating entry", err)
+    t.Fatal(err)
   }
   foundName := entry.AttrField(dwarf.AttrName).Val
   if foundName != requestedName {
     t.Log("Found the wrong entry.")
     t.Log("  Requested entry: ", requestedName)
     t.Log("  Found entry: ", foundName)
+    t.Fail()
   }
-  reader.Seek(0)
 }
 
 func shouldFailGetEntry(t *testing.T, requestedName string, errorString string) {
@@ -41,7 +41,6 @@ func shouldFailGetEntry(t *testing.T, requestedName string, errorString string) 
   if err == nil {
     t.Fatal("Should have failed locating entry", requestedName)
   }
-  reader.Seek(0)
 }
 
 func TestGetEntry(t *testing.T) {
@@ -52,7 +51,26 @@ func TestGetEntry(t *testing.T) {
   shouldFailGetEntry(t, "badname", "entry could not be found")
 }
 
-func TestHasAttr(t *testing.T) {
+func testGetTypeEntry(t *testing.T, entryName string, expectedTag dwarf.Tag) {
+  reader, _ := GetReader(testcaseFilename)
+  entry, err := GetEntry(reader, entryName)
+  if err != nil {
+    t.Fatal(err)
+  }
+  typeEntry, err := GetTypeEntry(reader, entry)
+  if err != nil {
+    t.Fatal("Could not get typedef", err)
+  }
+  if typeEntry.Tag != expectedTag {
+    t.Fatal("Did not find the expected tag")
+  }
+}
+
+func TestGetTypeEntry(t *testing.T) {
+  testGetTypeEntry(t, "formula_1_teams", dwarf.TagArrayType)
+  testGetTypeEntry(t, "drivers", dwarf.TagArrayType)
+  testGetTypeEntry(t, "Driver", dwarf.TagStructType)
+  testGetTypeEntry(t, "char", dwarf.TagBaseType)
 }
 
 func TestParseLocation(t *testing.T) {
