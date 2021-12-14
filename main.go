@@ -30,7 +30,7 @@ func main() {
 	entryReader, _ := parser.GetReader(filename)
 	// Start by printing the first DIE we find
 	entry, _ := entryReader.Next()
-	parser.PrintDieInfo(entry)
+	parser.PrintEntryInfo(entry)
 
 	// Stack onto which we will push entries when we switch
 	// contexts to allow navigating "back" to a previous context
@@ -51,7 +51,7 @@ func main() {
 		case "quit":
 			return
 		case "print":
-			parser.PrintDieInfo(entry)
+			parser.PrintEntryInfo(entry)
 		case "next":
 			{
 				if entry == nil {
@@ -59,12 +59,12 @@ func main() {
 					break
 				}
 				entry, _ = entryReader.Next()
-				parser.PrintDieInfo(entry)
+				parser.PrintEntryInfo(entry)
 			}
 		case "type":
 			entryStack.Push(entry.Offset)
 			entry = parser.GetTypeDie(entryReader, entry)
-			parser.PrintDieInfo(entry)
+			parser.PrintEntryInfo(entry)
 		case "back":
 			if entryStack.Len() == 0 {
 				fmt.Println("No context to go backwards to")
@@ -73,7 +73,7 @@ func main() {
 				entryOffset := entryStack.Pop().(dwarf.Offset)
 				entryReader.Seek(entryOffset)
 				entry, _ = entryReader.Next()
-				parser.PrintDieInfo(entry)
+				parser.PrintEntryInfo(entry)
 			}
     case "list_all_attributes":
       parser.ListAllAttributes(entry)
