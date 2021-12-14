@@ -17,6 +17,7 @@ func completer(d prompt.Document) []prompt.Suggest {
 		{Text: "quit", Description: "Display current DIE's type DIE"},
 		{Text: "print", Description: "Display current DIE"},
 		{Text: "next", Description: "Advance to the next DIE in the current context"},
+		{Text: "skip_children", Description: "Skip all children of this entry"},
 		{Text: "type_die", Description: "Move context to this DIE's type DIE"},
 		{Text: "type", Description: "Read the type corresponding to this entry if possible"},
 		{Text: "back", Description: "Move context back to the previous DIE we were targeting"},
@@ -61,6 +62,8 @@ func main() {
 				entry, _ = reader.Next()
 				parser.PrintEntryInfo(entry)
 			}
+    case "skip_children":
+      reader.SkipChildren()
 		case "type_die":
 			entryStack.Push(entry.Offset)
 			entry = parser.GetTypeDie(reader, entry)
