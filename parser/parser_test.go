@@ -1,6 +1,7 @@
 package parser
 
 import (
+  "debug/dwarf"
 	"testing"
 )
 
@@ -15,13 +16,25 @@ func TestGetReader(t *testing.T) {
 	// For now, just assume testcase is always located in the right place
 	_, err := GetReader(testcaseFilename)
 	if err != nil {
-		t.Log("Error calling GetReader: %v", err)
-		t.Fail()
+		t.Fatal("Error calling GetReader", err)
 	}
 }
 
-func TestHasAttr(t *testing.T) {
+func TestGetEntry(t *testing.T) {
 	reader, _ := GetReader(testcaseFilename)
+  // Trivial case to find a top-level entry
+  entry, err := GetEntry(reader, "formula_1_teams")
+  if err != nil {
+    t.Log("Error finding formula_1_teams")
+    t.Fail()
+  }
+  entryName := entry.AttrField(dwarf.AttrName).Val
+  if entryName != "formula_1_teams" {
+    t.Fatal("Found the wrong entry: expected formula_1_teams but founds", entryName)
+  }
+}
+
+func TestHasAttr(t *testing.T) {
 }
 
 func TestParseLocation(t *testing.T) {
