@@ -27,7 +27,7 @@ func main() {
 	filename := os.Args[1]
 	fmt.Println("Filename: ", filename)
 
-	entryReader := parser.GetReader(filename)
+	entryReader, _ := parser.GetReader(filename)
 	// Start by printing the first DIE we find
 	entry, _ := entryReader.Next()
 	parser.PrintDieInfo(entry)

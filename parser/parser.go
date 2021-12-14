@@ -4,7 +4,6 @@ import (
 	"debug/dwarf"
 	"debug/macho"
 	"fmt"
-	"log"
 )
 
 func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
@@ -89,23 +88,17 @@ func PrintDieInfo(entry *dwarf.Entry) {
 	}
 }
 
-func GetReader(filename string) *dwarf.Reader {
+func GetReader(filename string) (*dwarf.Reader, error) {
 	fmt.Println("Filename: ", filename)
 
 	fmt.Println("Opening file")
 	machoFile, err := macho.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
 	fmt.Println("Opened elfFile")
 
 	dwarfData, err := machoFile.DWARF()
-	if err != nil {
-		log.Fatal(err)
-	}
 	fmt.Println("Collected dwarfData")
 
 	entryReader := dwarfData.Reader()
 
-	return entryReader
+	return entryReader, err
 }
