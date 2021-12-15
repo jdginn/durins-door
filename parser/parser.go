@@ -41,6 +41,14 @@ func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
   }
 }
 
+func GetBitSize(entry *dwarf.Entry) int {
+  if hasAttr(entry, dwarf.AttrBitSize) {
+    return entry.AttrField(dwarf.AttrBitSize).Val.(int)
+  } else {
+    return int(entry.AttrField(dwarf.AttrByteSize).Val.(int64) * 8)
+  }
+}
+
 // Display key information about this entry; strive to be easily readable.
 func PrintEntryInfo(entry *dwarf.Entry) {
   // JDG TODO: make sure I'm using the right DW_AT names here
@@ -91,11 +99,6 @@ func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
 	return false
 }
 
-// TODO: delete?
-func SetContextToThisEntry(reader *dwarf.Reader, entry *dwarf.Entry) {
-	reader.Seek(entry.Offset)
-}
-
 // Translate a DW_AT_locationn attribute into an address
 func ParseLocation(location []uint8) int64 {
 	// Ignore the first entry in the slice
@@ -129,6 +132,3 @@ func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error
 	}
 	return typeDie, nil
 }
-
-// func GetType(reader *dwarf.Type, entry *dwarf.Entry) *dwarf.Type {
-// }
