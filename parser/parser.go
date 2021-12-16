@@ -21,17 +21,18 @@ func GetReader(filename string) (*dwarf.Reader, error) {
 	return entryReader, err
 }
 
-// Search for an entry matching a requested name
-func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
-  fmt.Printf("Locating %s\n", name)
+// Iterate once through the remaining entries looking for
+// an entry by name
+func getEntryByNameFromRemaining(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
   for {
     e, err := reader.Next()
     if err != nil {
       return nil, err
     }
     if e == nil {
-      return nil, errors.New("entry could not be found")
+      return e, err
     }
+    // TODO: there may be an optimization to skip children in some cases?
     if e.AttrField(dwarf.AttrName) == nil {
       continue
     }
@@ -39,6 +40,25 @@ func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
       return e, err
     }
   }
+}
+
+// Search for an entry matching a requested name
+func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
+  fmt.Printf("Locating %s\n", name)
+  e, err := getEntryByNameFromRemaining(reader, name)
+  // If we don't find the entry by the time we reach the end of the DWARF
+  // section, we need to start searching again from the beginning. We avoid
+  // always seeking back to the beginning because in most cases, the entry
+  // we are looking for is more likely to come after the most recent
+  // entry.
+  if e == nil {
+    reader.Seek(0)
+    e, err = getEntryByNameFromRemaining(reader, name)
+  }
+  if e == nil {
+    err = errors.New(fmt.Sprintf("Could not find %v", name))
+  }
+  return e, err
 }
 
 func GetBitSize(entry *dwarf.Entry) int {
@@ -117,7 +137,7 @@ func ParseLocation(location []uint8) int64 {
 // no such entry can be found. Leaves the reader at the new entry.
 func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
 	if !hasAttr(entry, dwarf.AttrType) {
-		fmt.Println("This entry does not have a type entry - returning it as-is")
+    fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.AttrField(dwarf.AttrName).Val)
 		return entry, nil
 	}
 	var typeDie *dwarf.Entry

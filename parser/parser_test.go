@@ -30,6 +30,8 @@ func testGetEntry(t *testing.T, requestedName string) (*dwarf.Entry) {
 func shouldFailGetEntry(t *testing.T, requestedName string, errorString string) {
 	reader, _ := GetReader(testcaseFilename)
   _, err := GetEntry(reader, requestedName)
+  // Test that we can read twice in a row without building a new reader
+  _, err = GetEntry(reader, requestedName)
   assert.NotNil(t, err)
 }
 
@@ -41,8 +43,7 @@ func TestGetEntry(t *testing.T) {
   shouldFailGetEntry(t, "badname", "entry could not be found")
 }
 
-func testGetTypeEntry(t *testing.T, entryName string) (*dwarf.Entry) {
-  reader, _ := GetReader(testcaseFilename)
+func testGetTypeEntry(t *testing.T, reader *dwarf.Reader, entryName string) (*dwarf.Entry) {
   entry, err := GetEntry(reader, entryName)
   if err != nil {
     t.Fatal(err)
@@ -55,17 +56,23 @@ func testGetTypeEntry(t *testing.T, entryName string) (*dwarf.Entry) {
 }
 
 func TestGetTypeEntry(t *testing.T) {
+  reader, _ := GetReader(testcaseFilename)
   var e *dwarf.Entry
-  e = testGetTypeEntry(t, "formula_1_teams")
+  e = testGetTypeEntry(t, reader, "formula_1_teams")
   assert.Equal(t, e.Tag, dwarf.TagArrayType) 
-  e = testGetTypeEntry(t, "drivers")
+  e = testGetTypeEntry(t, reader, "drivers")
   assert.Equal(t, e.Tag, dwarf.TagArrayType) 
-  e = testGetTypeEntry(t, "Driver")
+  e = testGetTypeEntry(t, reader, "Driver")
   assert.Equal(t, e.Tag, dwarf.TagStructType) 
   assert.Equal(t, e.AttrField(dwarf.AttrByteSize).Val, int64(12))
-  e = testGetTypeEntry(t, "char")
+  e = testGetTypeEntry(t, reader, "char")
   assert.Equal(t, e.Tag, dwarf.TagBaseType)
   assert.Equal(t, e.AttrField(dwarf.AttrByteSize).Val, int64(1))
+  // Make sure we can get entries we've already gotten
+  e = testGetTypeEntry(t, reader, "formula_1_teams")
+  assert.Equal(t, e.Tag, dwarf.TagArrayType) 
+  e = testGetTypeEntry(t, reader, "drivers")
+  assert.Equal(t, e.Tag, dwarf.TagArrayType) 
 }
 
 func TestParseLocation(t *testing.T) {
