@@ -13,24 +13,24 @@ func TestNewTypeEntryProxy(t *testing.T) {
 
 	e, _ = GetEntry(reader, "Driver")
 	p = NewTypeEntryProxy(reader, e)
-	assert.Equal(t, p.Name, "Driver")
-	assert.Equal(t, p.BitSize, int(12*8))
+	assert.Equal(t, "Driver", p.Name)
+	assert.Equal(t, int(12*8), p.BitSize)
 
 	e, _ = GetEntry(reader, "char")
 	p = NewTypeEntryProxy(reader, e)
-	assert.Equal(t, p.Name, "char")
-	assert.Equal(t, p.BitSize, int(8))
+	assert.Equal(t, "char", p.Name)
+	assert.Equal(t, int(8), p.BitSize)
 
 	// Make sure we can get the same proxy twice
 	e, _ = GetEntry(reader, "Driver")
 	p = NewTypeEntryProxy(reader, e)
-	assert.Equal(t, p.Name, "Driver")
-	assert.Equal(t, p.BitSize, int(12*8))
+	assert.Equal(t, "Driver", p.Name)
+	assert.Equal(t, int(12*8), p.BitSize)
 
 	e, _ = GetEntry(reader, "char")
 	p = NewTypeEntryProxy(reader, e)
-	assert.Equal(t, p.Name, "char")
-	assert.Equal(t, p.BitSize, int(8))
+	assert.Equal(t, "char", p.Name)
+	assert.Equal(t, int(8), p.BitSize)
 }
 
 func TestNewTypeDefProxy(t *testing.T) {
@@ -41,15 +41,15 @@ func TestNewTypeDefProxy(t *testing.T) {
 	// Start with a few trivial cases
 	e, _ = GetEntry(reader, "Driver")
 	p = NewTypeDefProxy(reader, e)
-	assert.Equal(t, p.Name, "Driver")
-	assert.Equal(t, p.BitSize, int(12*8))
-	assert.Equal(t, p.Children, make(map[string]TypeEntryProxy))
+	assert.Equal(t, "Driver", p.Name)
+	assert.Equal(t, int(12*8), p.BitSize)
+	assert.Equal(t, make(map[string]TypeEntryProxy), p.Children)
 
 	e, _ = GetEntry(reader, "char")
 	p = NewTypeDefProxy(reader, e)
-	assert.Equal(t, p.Name, "char")
-	assert.Equal(t, p.BitSize, int(8))
-	assert.Equal(t, p.Children, make(map[string]TypeEntryProxy))
+	assert.Equal(t, "char", p.Name)
+	assert.Equal(t, int(8), p.BitSize)
+	assert.Equal(t, make(map[string]TypeEntryProxy), p.Children)
 
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, _ = GetEntry(reader, "Driver")
@@ -77,7 +77,7 @@ func TestNewTypeDefProxy(t *testing.T) {
 			Children:    make(map[string]TypeEntryProxy),
 		},
 	}
-	assert.Equal(t, p.Name, "Driver")
-	assert.Equal(t, p.BitSize, int(12*8))
-	assert.Equal(t, p.Children, driverChildren)
+	assert.Equal(t, "Driver", p.Name)
+	assert.Equal(t, int(12*8), p.BitSize)
+	assert.Equal(t, driverChildren, p.Children)
 }
