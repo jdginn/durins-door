@@ -34,6 +34,9 @@ func NewTypeEntryProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeEntryProxy {
 type TypeDefProxy struct {
 	Name     string
 	BitSize  int
+  DwarfOffset int
+  // TODO: is this the best name for this?
+  ArrayRanges []int
 	Children map[string]TypeEntryProxy
 }
 
@@ -42,6 +45,8 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 	proxy := &TypeDefProxy{
 		Name:     e.AttrField(dwarf.AttrName).Val.(string),
 		BitSize:  0,
+    DwarfOffset: 0,
+    ArrayRanges: []int{0},
 		Children: make(map[string]TypeEntryProxy),
 	}
 
