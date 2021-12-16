@@ -2,7 +2,7 @@ package main
 
 import (
 	"debug/dwarf"
-  "debug/macho"
+	"debug/macho"
 	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/golang-collections/collections/stack"
@@ -30,13 +30,13 @@ func main() {
 	filename := os.Args[1]
 	fmt.Println("Filename: ", filename)
 
-  file, err := macho.Open(filename)
-  data, err := file.DWARF()
+	file, err := macho.Open(filename)
+	data, err := file.DWARF()
 	reader := data.Reader()
-  if err != nil {
-    fmt.Printf("Failed with error %v", err)
-  }
-    
+	if err != nil {
+		fmt.Printf("Failed with error %v", err)
+	}
+
 	// Start by printing the first DIE we find
 	entry, _ := reader.Next()
 	parser.PrintEntryInfo(entry)
@@ -62,24 +62,24 @@ func main() {
 				entry, _ = reader.Next()
 				parser.PrintEntryInfo(entry)
 			}
-    case "skip_children":
-      reader.SkipChildren()
+		case "skip_children":
+			reader.SkipChildren()
 		case "type_die":
 			entryStack.Push(entry.Offset)
 			entry = parser.GetTypeEntry(reader, entry)
 			parser.PrintEntryInfo(entry)
 		case "type":
-      if entry.Tag == dwarf.TagTypedef {
-        typ, _ := data.Type(entry.Offset)
-        fmt.Printf("Type: %v\n", typ)
-        fmt.Printf("  Size: %v\n", typ.Size())
-      } else if entry.AttrField(dwarf.AttrType).Val != nil {
-        typ, _ := data.Type(entry.AttrField(dwarf.AttrType).Val.(dwarf.Offset))
-        fmt.Printf("Type: %v\n", typ)
-        fmt.Printf("  Size: %v\n", typ.Size())
-      } else {
-        fmt.Println("Cannot get a type from this tag")
-      }
+			if entry.Tag == dwarf.TagTypedef {
+				typ, _ := data.Type(entry.Offset)
+				fmt.Printf("Type: %v\n", typ)
+				fmt.Printf("  Size: %v\n", typ.Size())
+			} else if entry.AttrField(dwarf.AttrType).Val != nil {
+				typ, _ := data.Type(entry.AttrField(dwarf.AttrType).Val.(dwarf.Offset))
+				fmt.Printf("Type: %v\n", typ)
+				fmt.Printf("  Size: %v\n", typ.Size())
+			} else {
+				fmt.Println("Cannot get a type from this tag")
+			}
 		case "back":
 			if entryStack.Len() == 0 {
 				fmt.Println("No context to go backwards to")
@@ -90,8 +90,8 @@ func main() {
 				entry, _ = reader.Next()
 				parser.PrintEntryInfo(entry)
 			}
-    case "list_all_attributes":
-      parser.ListAllAttributes(entry)
+		case "list_all_attributes":
+			parser.ListAllAttributes(entry)
 		}
 	}
 }
