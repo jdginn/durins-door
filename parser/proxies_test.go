@@ -21,16 +21,16 @@ func TestNewTypeEntryProxy(t *testing.T) {
 	assert.Equal(t, p.Name, "char")
 	assert.Equal(t, p.BitSize, int(8))
 
-	// // Make sure we can get the same proxy twice
-	// e, _ = GetEntry(reader, "Driver")
-	// p = NewTypeEntryProxy(reader, e)
-	// assert.Equal(t, p.Name, "Driver")
-	// assert.Equal(t, p.BitSize, int(12*8))
+	// Make sure we can get the same proxy twice
+	e, _ = GetEntry(reader, "Driver")
+	p = NewTypeEntryProxy(reader, e)
+	assert.Equal(t, p.Name, "Driver")
+	assert.Equal(t, p.BitSize, int(12*8))
 
-	// e, _ = GetEntry(reader, "char")
-	// p = NewTypeEntryProxy(reader, e)
-	// assert.Equal(t, p.Name, "char")
-	// assert.Equal(t, p.BitSize, int(8))
+	e, _ = GetEntry(reader, "char")
+	p = NewTypeEntryProxy(reader, e)
+	assert.Equal(t, p.Name, "char")
+	assert.Equal(t, p.BitSize, int(8))
 }
 
 // func TestNewTypeDefProxy(t *testing.T) {
