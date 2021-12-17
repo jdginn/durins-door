@@ -48,6 +48,8 @@ func TestNewTypeDefProxy(t *testing.T) {
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, _ = GetEntry(reader, "Driver")
 	driverProxy = NewTypeDefProxy(reader, e)
+  // NOTE: clang chooses to pad bools out to 4 bytes despite the typical implementation
+  // being only 1 byte
 	var driverChildren = []TypeDefProxy {
 		{
 			Name:         "initials",
@@ -59,9 +61,6 @@ func TestNewTypeDefProxy(t *testing.T) {
 		{
 			Name:    "car_number",
 			BitSize: 32,
-			// TODO: I'm fairly ceratain this is correct and the program is currently
-			// generating bad output but I will make this pass temporarily to evaluate
-			// some additional testcases to probe my theory
 			StructOffset: 32,
 			ArrayRanges:  []int{0},
 			Children:     make([]TypeDefProxy, 0),
@@ -69,10 +68,6 @@ func TestNewTypeDefProxy(t *testing.T) {
 		{
 			Name:    "has_won_wdc",
 			BitSize: 8,
-			// TODO: I'm fairly ceratain this is correct and the program is currently
-			// generating bad output but I will make this pass temporarily to evaluate
-			// some additional testcases to probe my theory
-			// StructOffset: 48,
 			StructOffset: 64,
 			ArrayRanges:  []int{0},
 			Children:     make([]TypeDefProxy, 0),
@@ -92,7 +87,7 @@ func TestNewTypeDefProxy(t *testing.T) {
 			BitSize:      96,
 			StructOffset: 0,
 			ArrayRanges:  []int{2},
-      Children:     []TypeDefProxy{*driverProxy},
+      Children:     driverProxy.Children,
 		},
 		{
 			Name:    "sponsors",
@@ -100,57 +95,41 @@ func TestNewTypeDefProxy(t *testing.T) {
 			// TODO: I'm fairly ceratain this is correct and the program is currently
 			// generating bad output but I will make this pass temporarily to evaluate
 			// some additional testcases to probe my theory
-			StructOffset: 96,
+			StructOffset: 192,
 			ArrayRanges:  []int{4},
 			Children:     make([]TypeDefProxy, 0),
 		},
 		{
 			Name:    "has_won_wdc",
 			BitSize: 8,
-			// TODO: I'm fairly ceratain this is correct and the program is currently
-			// generating bad output but I will make this pass temporarily to evaluate
-			// some additional testcases to probe my theory
-			// StructOffset: 48,
-			StructOffset: 128,
+			StructOffset: 256,
 			ArrayRanges:  []int{0},
 			Children:     make([]TypeDefProxy, 0),
 		},
 		{
 			Name:    "last_wdc",
 			BitSize: 32,
-			// TODO: I'm fairly ceratain this is correct and the program is currently
-			// generating bad output but I will make this pass temporarily to evaluate
-			// some additional testcases to probe my theory
-			// StructOffset: 48,
-			StructOffset: 160,
+			StructOffset: 288,
 			ArrayRanges:  []int{0},
 			Children:     make([]TypeDefProxy, 0),
 		},
 		{
 			Name:    "has_won_wcc",
 			BitSize: 8,
-			// TODO: I'm fairly ceratain this is correct and the program is currently
-			// generating bad output but I will make this pass temporarily to evaluate
-			// some additional testcases to probe my theory
-			// StructOffset: 48,
-			StructOffset: 192,
+			StructOffset: 320,
 			ArrayRanges:  []int{0},
 			Children:     make([]TypeDefProxy, 0),
 		},
 		{
 			Name:    "last_wcc",
 			BitSize: 32,
-			// TODO: I'm fairly ceratain this is correct and the program is currently
-			// generating bad output but I will make this pass temporarily to evaluate
-			// some additional testcases to probe my theory
-			// StructOffset: 48,
-			StructOffset: 222,
+			StructOffset: 352,
 			ArrayRanges:  []int{0},
 			Children:     make([]TypeDefProxy, 0),
 		},
   }
 
 	assert.Equal(t, "Team", teamProxy.Name)
-	assert.Equal(t, int(30*8), teamProxy.BitSize)
+	assert.Equal(t, int(384), teamProxy.BitSize)
 	assert.Equal(t, teamChildren, teamProxy.Children)
 }
