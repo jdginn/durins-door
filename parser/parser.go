@@ -74,6 +74,7 @@ func PrintEntryInfo(entry *dwarf.Entry) {
   // JDG TODO: make sure I'm using the right DW_AT names here
 	fmt.Printf("Tag: %s\n", entry.Tag)
 	fmt.Printf("  Children: %v\n", entry.Children)
+	fmt.Printf("  Offset: %v\n", entry.Offset)
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrName {
 			name := field.Val.(string)
