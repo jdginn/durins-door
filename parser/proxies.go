@@ -56,6 +56,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		proxy.BitSize = GetBitSize(typeEntry)
 	}
 
+  fmt.Println("Parsing typedef for:")
 	PrintEntryInfo(typeEntry)
 	if typeEntry.Children {
 		for {
@@ -68,16 +69,19 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 			// children of this typedef. We are also finished if we reach the end of the DWARF
 			// section during this iteration.
 			if (child == nil) {
-        fmt.Println("Bailing from populating children because we found the final entry")
+        fmt.Println("Bailing from populating children because we saw the final entry in the DWARF")
 				break
 			}
-			if (child.Tag != dwarf.TagMember) {
-        fmt.Println("Bailing from populating children because we saw the final member")
+			if (child.Tag == 0) {
+        fmt.Println("Bailing from populating children because we found a null entry")
 				break
 			}
 
 			// Note that constructing proxies for all children makes this constructor
 			// itself recursive.
+
+      // TODO: the problem here is that we are resolving the type of this inside, which does not work
+      // upon recursive calls
 			childProxy := NewTypeDefProxy(reader, child)
       // TODO: is this the right way to do this in go?
 			proxy.Children = append(proxy.Children, *childProxy)

@@ -39,12 +39,6 @@ func TestNewTypeDefProxy(t *testing.T) {
 	var e *dwarf.Entry
 
 	// Start with a few trivial cases
-	e, _ = GetEntry(reader, "Driver")
-	p = NewTypeDefProxy(reader, e)
-	assert.Equal(t, "Driver", p.Name)
-	assert.Equal(t, int(12*8), p.BitSize)
-  assert.Equal(t, make([]TypeDefProxy, 0), p.Children)
-
 	e, _ = GetEntry(reader, "char")
 	p = NewTypeDefProxy(reader, e)
 	assert.Equal(t, "char", p.Name)
