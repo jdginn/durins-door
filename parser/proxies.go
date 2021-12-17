@@ -37,7 +37,7 @@ type TypeDefProxy struct {
 	DwarfOffset int
 	// TODO: is this the best name for this?
 	ArrayRanges []int
-	Children    map[string]TypeDefProxy
+	Children    []TypeDefProxy
 }
 
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
@@ -47,7 +47,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		BitSize:     0,
 		DwarfOffset: 0,
 		ArrayRanges: []int{0},
-		Children:    make(map[string]TypeDefProxy),
+		Children:    make([]TypeDefProxy, 0),
 	}
 
 	// TODO: this probably needs an else case where we compute size from walking
@@ -56,7 +56,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		proxy.BitSize = GetBitSize(typeEntry)
 	}
 
-  PrintEntryInfo(typeEntry)
+	PrintEntryInfo(typeEntry)
 	if typeEntry.Children {
 		for {
 			child, err := reader.Next()
@@ -65,39 +65,25 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 			}
 
 			// When we've finished iterating over members, we are done with the meaningful
-      // children of this typedef. We are also finished if we reach the end of the DWARF
+			// children of this typedef. We are also finished if we reach the end of the DWARF
 			// section during this iteration.
 			if (child.Tag != dwarf.TagMember) || (child == nil) {
 				break
 			}
 
-      // Note that constructing proxies for all children makes this constructor
-      // recursive itself.
-      childProxy := NewTypeDefProxy(reader, child)
-      proxy.Children[childProxy.Name] = *childProxy
+			// Note that constructing proxies for all children makes this constructor
+			// recursive itself.
+			childProxy := NewTypeDefProxy(reader, child)
+      // TODO: is this the right way to do this in go?
+			proxy.Children = append(proxy.Children, *childProxy)
 		}
 	}
 
 	return proxy
 }
 
-// TODO: this should probably be a new thing called TypeDefProxy, representing the full TypeDef
-// // Traverse the entire type hierarchy underneath this
-// // entry to populate the `children` maps at each level
-// func (t *TypedieProxy) Populate() *TypedieProxy {
-//   //TODO
-//   return t
-// }
-
-// func (t *TypedieProxy) Flatten() *TypedieProxy {
-//   //TODO: what does this return?
-//   return t
-// }
-
 type VariableProxy struct {
-	Name     string
+  Type TypeDefProxy
 	Address  int
-	Size     int
-	entry    *dwarf.Entry
-	children map[string]VariableProxy
+  Value int
 }

@@ -54,27 +54,27 @@ func TestNewTypeDefProxy(t *testing.T) {
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, _ = GetEntry(reader, "Driver")
 	p = NewTypeDefProxy(reader, e)
-	var driverChildren = map[string]TypeDefProxy{
-		"initials": {
+	var driverChildren = []TypeDefProxy{
+    {
 			Name:        "initials",
 			BitSize:     8,
 			DwarfOffset: 0,
 			ArrayRanges: []int{2},
-			Children:    make(map[string]TypeDefProxy),
+      Children:    make([]TypeDefProxy, 0),
 		},
-		"car_number": {
+    {
 			Name:        "car_number",
 			BitSize:     32,
 			DwarfOffset: 16,
 			ArrayRanges: []int{0},
-			Children:    make(map[string]TypeDefProxy),
+      Children:    make([]TypeDefProxy, 0),
 		},
-		"has_won_wdc": {
+    {
 			Name:        "has_won_wdc",
 			BitSize:     8,
 			DwarfOffset: 48,
 			ArrayRanges: []int{0},
-			Children:    make(map[string]TypeDefProxy),
+      Children:    make([]TypeDefProxy, 0),
 		},
 	}
 	assert.Equal(t, "Driver", p.Name)
