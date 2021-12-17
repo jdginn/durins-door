@@ -88,7 +88,7 @@ func TestNewTypeDefProxy(t *testing.T) {
 
 	var teamChildren = []TypeDefProxy {
 		{
-			Name:         "Driver",
+			Name:         "drivers",
 			BitSize:      96,
 			StructOffset: 0,
 			ArrayRanges:  []int{2},
@@ -153,5 +153,4 @@ func TestNewTypeDefProxy(t *testing.T) {
 	assert.Equal(t, "Team", teamProxy.Name)
 	assert.Equal(t, int(30*8), teamProxy.BitSize)
 	assert.Equal(t, teamChildren, teamProxy.Children)
-
 }
