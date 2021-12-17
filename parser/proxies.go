@@ -37,7 +37,7 @@ type TypeDefProxy struct {
 	StructOffset int
 	// TODO: Is it safe for us to put this dwarf TypeDefProxy
 	// in an Outward-facing struct? Probably not.
-	DwarfOffset dwarf.Offset
+	// DwarfOffset dwarf.Offset
 	// TODO: is this the best name for this?
 	ArrayRanges []int
 	Children    []TypeDefProxy
@@ -45,7 +45,7 @@ type TypeDefProxy struct {
 
 func (p *TypeDefProxy) string() string {
 	// TODO: for now, we don't print children
-	var str string = fmt.Sprintf("Typedef %s\n  BitSize: %d\n  DwarfOffset %x\n  ArrayRanges %v\n  Children %#v\n", p.Name, p.BitSize, p.DwarfOffset, p.ArrayRanges, p.Children)
+	var str string = fmt.Sprintf("Typedef %s\n  BitSize: %d\n  ArrayRanges %v\n  Children %#v\n", p.Name, p.BitSize, p.ArrayRanges, p.Children)
 	return str
 }
 
@@ -59,7 +59,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		Name:         e.Val(dwarf.AttrName).(string),
 		BitSize:      0,
 		StructOffset: 0,
-		DwarfOffset:  e.Offset,
+		// DwarfOffset:  e.Offset,
 		ArrayRanges:  []int{0},
 		Children:     make([]TypeDefProxy, 0),
 	}
@@ -108,8 +108,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 			// TODO: is this the right way to do this in go?
 			proxy.Children = append(proxy.Children, *childProxy)
 			// How do we appropriately parse this stuff without having to jump around a bunch in the reader?
-			// ^ Is jumping around in the reader even slow?
-			// For now, we can remember the last DwarfOffset and jump backward
+			// ^ Is jumping around in the reader expensive?
 			reader.Seek(child.Offset)
 			reader.Next()
 		}
