@@ -61,18 +61,23 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		for {
 			child, err := reader.Next()
 			if err != nil {
-				fmt.Println("Error iterating children; this error handling needs to be improved!")
+				fmt.Println("Error iterating children; **this error handling needs to be improved!**")
 			}
 
 			// When we've finished iterating over members, we are done with the meaningful
 			// children of this typedef. We are also finished if we reach the end of the DWARF
 			// section during this iteration.
-			if (child.Tag != dwarf.TagMember) || (child == nil) {
+			if (child == nil) {
+        fmt.Println("Bailing from populating children because we found the final entry")
+				break
+			}
+			if (child.Tag != dwarf.TagMember) {
+        fmt.Println("Bailing from populating children because we saw the final member")
 				break
 			}
 
 			// Note that constructing proxies for all children makes this constructor
-			// recursive itself.
+			// itself recursive.
 			childProxy := NewTypeDefProxy(reader, child)
       // TODO: is this the right way to do this in go?
 			proxy.Children = append(proxy.Children, *childProxy)

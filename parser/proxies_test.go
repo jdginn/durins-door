@@ -43,13 +43,13 @@ func TestNewTypeDefProxy(t *testing.T) {
 	p = NewTypeDefProxy(reader, e)
 	assert.Equal(t, "Driver", p.Name)
 	assert.Equal(t, int(12*8), p.BitSize)
-	assert.Equal(t, make(map[string]TypeDefProxy), p.Children)
+  assert.Equal(t, make([]TypeDefProxy, 0), p.Children)
 
 	e, _ = GetEntry(reader, "char")
 	p = NewTypeDefProxy(reader, e)
 	assert.Equal(t, "char", p.Name)
 	assert.Equal(t, int(8), p.BitSize)
-	assert.Equal(t, make(map[string]TypeDefProxy), p.Children)
+  assert.Equal(t, make([]TypeDefProxy, 0), p.Children)
 
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, _ = GetEntry(reader, "Driver")
