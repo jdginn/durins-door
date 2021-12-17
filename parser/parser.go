@@ -10,14 +10,9 @@ import (
 // Return a dwarf.Reader object for a macho file
 // TODO: support ELF in addition to macho...
 func GetReader(filename string) (*dwarf.Reader, error) {
-	fmt.Println("Opening ", filename)
 	machoFile, err := macho.Open(filename)
-
 	dwarfData, err := machoFile.DWARF()
-	fmt.Println("Collected dwarfData")
-
 	entryReader := dwarfData.Reader()
-
 	return entryReader, err
 }
 
@@ -44,7 +39,6 @@ func getEntryByNameFromRemaining(reader *dwarf.Reader, name string) (*dwarf.Entr
 
 // Search for an entry matching a requested name
 func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
-	fmt.Printf("Locating %s\n", name)
 	e, err := getEntryByNameFromRemaining(reader, name)
 	// If we don't find the entry by the time we reach the end of the DWARF
 	// section, we need to start searching again from the beginning. We avoid
@@ -80,9 +74,9 @@ func GetArrayRanges(reader *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
   // typeEntry, err := GetTypeEntry(reader, entry)
   // var err error
   for {
-    fmt.Println("Stepping through a subrange:")
+    // fmt.Println("Stepping through a subrange:")
     subrange, _ := reader.Next()
-    fmt.Println(FormatEntryInfo(subrange))
+    // fmt.Println(FormatEntryInfo(subrange))
 
     // When we've finished iterating over members, we are done with the meaningful
     // children of this typedef. We are also finished if we reach the end of the DWARF
@@ -97,7 +91,6 @@ func GetArrayRanges(reader *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
     }
 
     if hasAttr(subrange, dwarf.AttrCount) {
-      fmt.Println("Updating ranges...")
       ranges = append(ranges, int(subrange.Val(dwarf.AttrCount).(int64)))
     }
   }
@@ -188,14 +181,13 @@ func ParseLocation(location []uint8) int64 {
 // no such entry can be found. Leaves the reader at the new entry.
 func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
 	if !hasAttr(entry, dwarf.AttrType) {
-		fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.Val(dwarf.AttrName))
+		// fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.Val(dwarf.AttrName))
 		return entry, nil
 	}
 	var typeDie *dwarf.Entry
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrType {
 			typeDieOffset := field.Val.(dwarf.Offset)
-			fmt.Printf("  DW_AT_type_die: %v\n", typeDieOffset)
 			reader.Seek(typeDieOffset)
 			typeDie, _ := reader.Next()
 			return typeDie, nil
