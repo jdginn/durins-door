@@ -65,8 +65,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
   }
 
 	// Need to handle traversing through array entries to get to the underlying typedefs.
-  //
-  // The trick is understanding where the reader is pointing at each step along the way.
 	if typeEntry.Tag == dwarf.TagArrayType {
 		fmt.Println("Found a TagArrayType to get to:")
 		fmt.Println(FormatEntryInfo(typeEntry))
