@@ -23,7 +23,7 @@ func testGetEntry(t *testing.T, requestedName string) (*dwarf.Entry) {
 	reader, _ := GetReader(testcaseFilename)
   entry, err := GetEntry(reader, requestedName)
   assert.Nil(t, err)
-  assert.Equal(t, entry.AttrField(dwarf.AttrName).Val, requestedName)
+  assert.Equal(t, entry.Val(dwarf.AttrName), requestedName)
   return entry
 }
 
@@ -64,10 +64,10 @@ func TestGetTypeEntry(t *testing.T) {
   assert.Equal(t, e.Tag, dwarf.TagArrayType) 
   e = testGetTypeEntry(t, reader, "Driver")
   assert.Equal(t, e.Tag, dwarf.TagStructType) 
-  assert.Equal(t, e.AttrField(dwarf.AttrByteSize).Val, int64(12))
+  assert.Equal(t, e.Val(dwarf.AttrByteSize), int64(12))
   e = testGetTypeEntry(t, reader, "char")
   assert.Equal(t, e.Tag, dwarf.TagBaseType)
-  assert.Equal(t, e.AttrField(dwarf.AttrByteSize).Val, int64(1))
+  assert.Equal(t, e.Val(dwarf.AttrByteSize), int64(1))
   // Make sure we can get entries we've already gotten
   e = testGetTypeEntry(t, reader, "formula_1_teams")
   assert.Equal(t, e.Tag, dwarf.TagArrayType) 

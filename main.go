@@ -73,8 +73,8 @@ func main() {
 				typ, _ := data.Type(entry.Offset)
 				fmt.Printf("Type: %v\n", typ)
 				fmt.Printf("  Size: %v\n", typ.Size())
-			} else if entry.AttrField(dwarf.AttrType).Val != nil {
-				typ, _ := data.Type(entry.AttrField(dwarf.AttrType).Val.(dwarf.Offset))
+			} else if entry.Val(dwarf.AttrType) != nil {
+				typ, _ := data.Type(entry.Val(dwarf.AttrType).(dwarf.Offset))
 				fmt.Printf("Type: %v\n", typ)
 				fmt.Printf("  Size: %v\n", typ.Size())
 			} else {

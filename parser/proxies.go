@@ -15,7 +15,7 @@ type TypeEntryProxy struct {
 func NewTypeEntryProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeEntryProxy {
 	typeEntry, _ := GetTypeEntry(reader, e)
 	proxy := &TypeEntryProxy{
-		Name:    e.AttrField(dwarf.AttrName).Val.(string),
+		Name:    e.Val(dwarf.AttrName).(string),
 		Offset:  int(typeEntry.Offset),
 		BitSize: GetBitSize(typeEntry),
 	}
@@ -45,7 +45,7 @@ type TypeDefProxy struct {
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 	typeEntry, _ := GetTypeEntry(reader, e)
 	proxy := &TypeDefProxy{
-		Name:        e.AttrField(dwarf.AttrName).Val.(string),
+		Name:    e.Val(dwarf.AttrName).(string),
 		BitSize:     0,
 		DwarfOffset: e.Offset,
 		ArrayRanges: []int{0},

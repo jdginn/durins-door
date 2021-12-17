@@ -36,7 +36,7 @@ func getEntryByNameFromRemaining(reader *dwarf.Reader, name string) (*dwarf.Entr
     if e.AttrField(dwarf.AttrName) == nil {
       continue
     }
-    if e.AttrField(dwarf.AttrName).Val == name {
+    if e.Val(dwarf.AttrName)== name {
       return e, err
     }
   }
@@ -63,9 +63,9 @@ func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
 
 func GetBitSize(entry *dwarf.Entry) int {
   if hasAttr(entry, dwarf.AttrBitSize) {
-    return entry.AttrField(dwarf.AttrBitSize).Val.(int)
+    return entry.Val(dwarf.AttrBitSize).(int)
   } else {
-    return int(entry.AttrField(dwarf.AttrByteSize).Val.(int64) * 8)
+    return int(entry.Val(dwarf.AttrByteSize).(int64) * 8)
   }
 }
 
@@ -137,7 +137,7 @@ func ParseLocation(location []uint8) int64 {
 // no such entry can be found. Leaves the reader at the new entry.
 func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
 	if !hasAttr(entry, dwarf.AttrType) {
-    fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.AttrField(dwarf.AttrName).Val)
+    fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.Val(dwarf.AttrName))
 		return entry, nil
 	}
 	var typeDie *dwarf.Entry
