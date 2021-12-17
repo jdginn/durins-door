@@ -70,6 +70,40 @@ func GetBitSize(entry *dwarf.Entry) int {
 	}
 }
 
+// Return a slice with en entry for the range of each array dimension
+//
+// Scalar types will have range []int{0}. The length of the return defines
+// the dimension of the array.
+func GetArrayRanges(reader *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
+  _, err := GetTypeEntry(reader, entry)
+  ranges := make([]int, 0)
+  // typeEntry, err := GetTypeEntry(reader, entry)
+  // var err error
+  for {
+    fmt.Println("Stepping through a subrange:")
+    subrange, _ := reader.Next()
+    fmt.Println(FormatEntryInfo(subrange))
+
+    // When we've finished iterating over members, we are done with the meaningful
+    // children of this typedef. We are also finished if we reach the end of the DWARF
+    // section during this iteration.
+    if subrange == nil {
+      fmt.Println("Bailing from populating children because we saw the final entry in the DWARF")
+      break
+    }
+    if subrange.Tag == 0 {
+      fmt.Println("Bailing from populating children because we found a null entry")
+      break
+    }
+
+    if hasAttr(subrange, dwarf.AttrCount) {
+      fmt.Println("Updating ranges...")
+      ranges = append(ranges, int(subrange.Val(dwarf.AttrCount).(int64)))
+    }
+  }
+  return ranges, err
+}
+
 // Format key information about this entry as a string; strive to be easily readable.
 func FormatEntryInfo(entry *dwarf.Entry) string {
 	// JDG TODO: make sure I'm using the right DW_AT names here
@@ -110,6 +144,9 @@ func FormatEntryInfo(entry *dwarf.Entry) string {
 		}
 		if field.Attr == dwarf.AttrDataBitOffset{
 			str += fmt.Sprintf("  DW_AT_data_bit_offset: %v\n", field.Val)
+		}
+		if field.Attr == dwarf.AttrCount {
+			str += fmt.Sprintf("  DW_AT_count: %d\n", field.Val)
 		}
 	}
 	return str

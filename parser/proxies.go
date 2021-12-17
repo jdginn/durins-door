@@ -70,12 +70,16 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		proxy.BitSize = GetBitSize(typeEntry)
 	}
 
-	// Need to handle traversing *through* array entries to get to the underlying
-	// typedefs. This is hard so for now we just ignore them (terrible hack)
+	// Need to handle traversing through array entries to get to the underlying typedefs.
+  //
+  // The trick is understanding where the reader is pointing at each step along the way.
 	if typeEntry.Tag == dwarf.TagArrayType {
-		typeEntry, _ = GetTypeEntry(reader, typeEntry)
-		fmt.Println("Jumping through TagArrayType to get to:")
+		fmt.Println("Found a TagArrayType to get to:")
 		fmt.Println(FormatEntryInfo(typeEntry))
+    ranges, _ := GetArrayRanges(reader, e)  
+    proxy.ArrayRanges = ranges
+    // Having resolved the array information the real type lies behind
+    typeEntry, _ = GetTypeEntry(reader, typeEntry)
 	}
 
 	fmt.Println("Parsing typedef for:")
