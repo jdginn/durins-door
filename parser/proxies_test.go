@@ -52,7 +52,6 @@ func TestNewTypeDefProxy(t *testing.T) {
     {
 			Name:        "initials",
 			BitSize:     8,
-			// DwarfOffset: 0,
 			StructOffset: 0,
 			ArrayRanges: []int{2},
       Children:    make([]TypeDefProxy, 0),
@@ -60,7 +59,6 @@ func TestNewTypeDefProxy(t *testing.T) {
     {
 			Name:        "car_number",
 			BitSize:     32,
-			// DwarfOffset: 16,
 			StructOffset: 16,
 			ArrayRanges: []int{0},
       Children:    make([]TypeDefProxy, 0),
@@ -68,7 +66,6 @@ func TestNewTypeDefProxy(t *testing.T) {
     {
 			Name:        "has_won_wdc",
 			BitSize:     8,
-			// DwarfOffset: 48,
 			StructOffset: 48,
 			ArrayRanges: []int{0},
       Children:    make([]TypeDefProxy, 0),

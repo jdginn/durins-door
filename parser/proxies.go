@@ -35,10 +35,6 @@ type TypeDefProxy struct {
 	Name         string
 	BitSize      int
 	StructOffset int
-	// TODO: Is it safe for us to put this dwarf TypeDefProxy
-	// in an Outward-facing struct? Probably not.
-	// DwarfOffset dwarf.Offset
-	// TODO: is this the best name for this?
 	ArrayRanges []int
 	Children    []TypeDefProxy
 }
@@ -59,7 +55,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		Name:         e.Val(dwarf.AttrName).(string),
 		BitSize:      0,
 		StructOffset: 0,
-		// DwarfOffset:  e.Offset,
 		ArrayRanges:  []int{0},
 		Children:     make([]TypeDefProxy, 0),
 	}
