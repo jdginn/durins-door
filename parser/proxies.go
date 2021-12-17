@@ -2,7 +2,7 @@ package parser
 
 import (
 	"debug/dwarf"
-	// "fmt"
+	"fmt"
 )
 
 // Description of
@@ -32,28 +32,50 @@ func NewTypeEntryProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeEntryProxy {
 // All relevant DWARF parsing is handled when this proxy is created and no intermediate
 // DWARF data is included here. The proxy should be ready to hand off as-is to a user.
 type TypeDefProxy struct {
-	Name     string
-	BitSize  int
-  DwarfOffset int
-  // TODO: is this the best name for this?
-  ArrayRanges []int
-	Children map[string]TypeEntryProxy
+	Name        string
+	BitSize     int
+	DwarfOffset int
+	// TODO: is this the best name for this?
+	ArrayRanges []int
+	Children    map[string]TypeDefProxy
 }
 
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 	typeEntry, _ := GetTypeEntry(reader, e)
 	proxy := &TypeDefProxy{
-		Name:     e.AttrField(dwarf.AttrName).Val.(string),
-		BitSize:  0,
-    DwarfOffset: 0,
-    ArrayRanges: []int{0},
-		Children: make(map[string]TypeEntryProxy),
+		Name:        e.AttrField(dwarf.AttrName).Val.(string),
+		BitSize:     0,
+		DwarfOffset: 0,
+		ArrayRanges: []int{0},
+		Children:    make(map[string]TypeDefProxy),
 	}
 
 	// TODO: this probably needs an else case where we compute size from walking
-  // the typedef, which we will do anyway.
+	// the typedef, which we will do anyway.
 	if hasAttr(typeEntry, dwarf.AttrByteSize) || hasAttr(typeEntry, dwarf.AttrBitSize) {
 		proxy.BitSize = GetBitSize(typeEntry)
+	}
+
+  PrintEntryInfo(typeEntry)
+	if typeEntry.Children {
+		for {
+			child, err := reader.Next()
+			if err != nil {
+				fmt.Println("Error iterating children; this error handling needs to be improved!")
+			}
+
+			// When we've finished iterating over members, we are done with the meaningful
+      // children of this typedef. We are also finished if we reach the end of the DWARF
+			// section during this iteration.
+			if (child.Tag != dwarf.TagMember) || (child == nil) {
+				break
+			}
+
+      // Note that constructing proxies for all children makes this constructor
+      // recursive itself.
+      childProxy := NewTypeDefProxy(reader, child)
+      proxy.Children[childProxy.Name] = *childProxy
+		}
 	}
 
 	return proxy
