@@ -75,16 +75,16 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 	if typeEntry.Tag == dwarf.TagArrayType {
 		typeEntry, _ = GetTypeEntry(reader, typeEntry)
 		fmt.Println("Jumping through TagArrayType to get to:")
-		PrintEntryInfo(typeEntry)
+		fmt.Println(FormatEntryInfo(typeEntry))
 	}
 
 	fmt.Println("Parsing typedef for:")
-	PrintEntryInfo(typeEntry)
+	fmt.Println(FormatEntryInfo(typeEntry))
 	if typeEntry.Children {
 		for {
 			child, err := reader.Next()
 			fmt.Println("Next child:")
-			PrintEntryInfo(child)
+			fmt.Println(FormatEntryInfo(child))
 			if err != nil {
 				fmt.Println("Error iterating children; **this error handling needs to be improved!**")
 			}

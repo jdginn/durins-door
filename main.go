@@ -39,7 +39,7 @@ func main() {
 
 	// Start by printing the first DIE we find
 	entry, _ := reader.Next()
-	parser.PrintEntryInfo(entry)
+	fmt.Println(parser.FormatEntryInfo(entry))
 
 	// Stack onto which we will push entries when we switch
 	// contexts to allow navigating "back" to a previous context
@@ -52,7 +52,7 @@ func main() {
 		case "quit":
 			return
 		case "print":
-			parser.PrintEntryInfo(entry)
+			fmt.Println(parser.FormatEntryInfo(entry))
 		case "next":
 			{
 				if entry == nil {
@@ -60,14 +60,14 @@ func main() {
 					break
 				}
 				entry, _ = reader.Next()
-				parser.PrintEntryInfo(entry)
+				fmt.Println(parser.FormatEntryInfo(entry))
 			}
 		case "skip_children":
 			reader.SkipChildren()
 		case "type_die":
 			entryStack.Push(entry.Offset)
 			entry, _ = parser.GetTypeEntry(reader, entry)
-			parser.PrintEntryInfo(entry)
+			fmt.Println(parser.FormatEntryInfo(entry))
 		case "type":
 			if entry.Tag == dwarf.TagTypedef {
 				typ, _ := data.Type(entry.Offset)
@@ -88,7 +88,7 @@ func main() {
 				entryOffset := entryStack.Pop().(dwarf.Offset)
 				reader.Seek(entryOffset)
 				entry, _ = reader.Next()
-				parser.PrintEntryInfo(entry)
+				fmt.Println(parser.FormatEntryInfo(entry))
 			}
 		case "list_all_attributes":
 			parser.ListAllAttributes(entry)

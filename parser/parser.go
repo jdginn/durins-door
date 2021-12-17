@@ -3,7 +3,7 @@ package parser
 import (
 	"debug/dwarf"
 	"debug/macho"
-  "errors"
+	"errors"
 	"fmt"
 )
 
@@ -24,82 +24,84 @@ func GetReader(filename string) (*dwarf.Reader, error) {
 // Iterate once through the remaining entries looking for
 // an entry by name
 func getEntryByNameFromRemaining(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
-  for {
-    e, err := reader.Next()
-    if err != nil {
-      return nil, err
-    }
-    if e == nil {
-      return e, err
-    }
-    // TODO: there may be an optimization to skip children in some cases?
-    if e.AttrField(dwarf.AttrName) == nil {
-      continue
-    }
-    if e.Val(dwarf.AttrName)== name {
-      return e, err
-    }
-  }
+	for {
+		e, err := reader.Next()
+		if err != nil {
+			return nil, err
+		}
+		if e == nil {
+			return e, err
+		}
+		// TODO: there may be an optimization to skip children in some cases?
+		if e.AttrField(dwarf.AttrName) == nil {
+			continue
+		}
+		if e.Val(dwarf.AttrName) == name {
+			return e, err
+		}
+	}
 }
 
 // Search for an entry matching a requested name
 func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
-  fmt.Printf("Locating %s\n", name)
-  e, err := getEntryByNameFromRemaining(reader, name)
-  // If we don't find the entry by the time we reach the end of the DWARF
-  // section, we need to start searching again from the beginning. We avoid
-  // always seeking back to the beginning because in most cases, the entry
-  // we are looking for is more likely to come after the most recent
-  // entry.
-  if e == nil {
-    reader.Seek(0)
-    e, err = getEntryByNameFromRemaining(reader, name)
-  }
-  if e == nil {
-    err = errors.New(fmt.Sprintf("Could not find %v", name))
-  }
-  return e, err
+	fmt.Printf("Locating %s\n", name)
+	e, err := getEntryByNameFromRemaining(reader, name)
+	// If we don't find the entry by the time we reach the end of the DWARF
+	// section, we need to start searching again from the beginning. We avoid
+	// always seeking back to the beginning because in most cases, the entry
+	// we are looking for is more likely to come after the most recent
+	// entry.
+	if e == nil {
+		reader.Seek(0)
+		e, err = getEntryByNameFromRemaining(reader, name)
+	}
+	if e == nil {
+		err = errors.New(fmt.Sprintf("Could not find %v", name))
+	}
+	return e, err
 }
 
 func GetBitSize(entry *dwarf.Entry) int {
-  if hasAttr(entry, dwarf.AttrBitSize) {
-    return entry.Val(dwarf.AttrBitSize).(int)
-  } else {
-    return int(entry.Val(dwarf.AttrByteSize).(int64) * 8)
-  }
+	if hasAttr(entry, dwarf.AttrBitSize) {
+		return entry.Val(dwarf.AttrBitSize).(int)
+	} else {
+		return int(entry.Val(dwarf.AttrByteSize).(int64) * 8)
+	}
 }
 
 // Display key information about this entry; strive to be easily readable.
-func PrintEntryInfo(entry *dwarf.Entry) {
-  // JDG TODO: make sure I'm using the right DW_AT names here
-	fmt.Printf("Tag: %s\n", entry.Tag)
-	fmt.Printf("  Children: %v\n", entry.Children)
-	fmt.Printf("  Offset: %v\n", entry.Offset)
+func FormatEntryInfo(entry *dwarf.Entry) string {
+	// JDG TODO: make sure I'm using the right DW_AT names here
+	var str string
+	str = fmt.Sprintf("Tag: %s\n", entry.Tag)
+	str += fmt.Sprintf("  Children: %v\n", entry.Children)
+	str += fmt.Sprintf("  Offset: %v\n", entry.Offset)
 	for _, field := range entry.Field {
 		if field.Attr == dwarf.AttrName {
 			name := field.Val.(string)
-			fmt.Printf("  DW_AT_name: %s\n", name)
+			str += fmt.Sprintf("  DW_AT_name: %s\n", name)
 		}
 		if field.Attr == dwarf.AttrByteSize {
 			byte_size := field.Val.(int64)
-			fmt.Printf("  DW_AT_byte_size: %d\n", byte_size)
+			str += fmt.Sprintf("  DW_AT_byte_size: %d\n", byte_size)
 		}
 		if field.Attr == dwarf.AttrLocation {
 			location := field.Val.([]uint8)
-			fmt.Printf("  DW_AT_location: %x\n", ParseLocation(location))
+			str += fmt.Sprintf("  DW_AT_location: %x\n", ParseLocation(location))
 		}
 		if field.Attr == dwarf.AttrDataMemberLoc {
 			location := field.Val
-			fmt.Printf("  DW_AT_data_member_location: %x\n", location)
+			str += fmt.Sprintf("  DW_AT_data_member_location: %x\n", location)
 		}
 		if field.Attr == dwarf.AttrCompDir {
 			comp_dir := field.Val
-			fmt.Printf("  DW_AT_comp_dir: %s\n", comp_dir)
+			str += fmt.Sprintf("  DW_AT_comp_dir: %s\n", comp_dir)
 		}
 		if field.Attr == dwarf.AttrType {
-			fmt.Printf("  DW_AT_type_die at offset: %v\n", field.Val)
+			str += fmt.Sprintf("  DW_AT_type_die at offset: %v\n", field.Val)
 		}
 	}
+	return str
 }
 
 // Print each attribute for this entry.
@@ -138,7 +140,7 @@ func ParseLocation(location []uint8) int64 {
 // no such entry can be found. Leaves the reader at the new entry.
 func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
 	if !hasAttr(entry, dwarf.AttrType) {
-    fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.Val(dwarf.AttrName))
+		fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.Val(dwarf.AttrName))
 		return entry, nil
 	}
 	var typeDie *dwarf.Entry
