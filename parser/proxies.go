@@ -34,7 +34,9 @@ func NewTypeEntryProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeEntryProxy {
 type TypeDefProxy struct {
 	Name        string
 	BitSize     int
-	DwarfOffset int
+  // TODO: Is it safe for us to put this dwarf TypeDefProxy
+  // in an Outward-facing struct? Probably not.
+	DwarfOffset dwarf.Offset 
 	// TODO: is this the best name for this?
 	ArrayRanges []int
 	Children    []TypeDefProxy
@@ -45,7 +47,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 	proxy := &TypeDefProxy{
 		Name:        e.AttrField(dwarf.AttrName).Val.(string),
 		BitSize:     0,
-		DwarfOffset: 0,
+		DwarfOffset: e.Offset,
 		ArrayRanges: []int{0},
 		Children:    make([]TypeDefProxy, 0),
 	}
@@ -56,11 +58,21 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		proxy.BitSize = GetBitSize(typeEntry)
 	}
 
+  // Need to handle traversing *through* array entries to get to the underlying
+  // typedefs. This is hard so for now we just ignore them (terrible hack)
+  if typeEntry.Tag == dwarf.TagArrayType {
+    typeEntry, _ = GetTypeEntry(reader, typeEntry)
+    fmt.Println("Jumping through TagArrayType to get to:")
+	  PrintEntryInfo(typeEntry)
+  }
+
   fmt.Println("Parsing typedef for:")
 	PrintEntryInfo(typeEntry)
 	if typeEntry.Children {
 		for {
 			child, err := reader.Next()
+      fmt.Println("Next child:")
+      PrintEntryInfo(child)
 			if err != nil {
 				fmt.Println("Error iterating children; **this error handling needs to be improved!**")
 			}
@@ -79,15 +91,15 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 
 			// Note that constructing proxies for all children makes this constructor
 			// itself recursive.
-
-      // TODO: the problem here is that we are resolving the type of this inside, which does not work
-      // upon recursive calls
 			childProxy := NewTypeDefProxy(reader, child)
       // TODO: is this the right way to do this in go?
 			proxy.Children = append(proxy.Children, *childProxy)
+      // How do we appropriately parse this stuff without having to jump around a bunch in the reader?
+      // ^ Is jumping around in the reader even slow?
+      // For now, we can remember the last DwarfOffset and jump backward
+      // reader.Seek(child.Offset)
 		}
 	}
-
 	return proxy
 }
 
