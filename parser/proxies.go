@@ -64,12 +64,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
     proxy.StructOffset = int(e.Val(dwarf.AttrDataMemberLoc).(int64)) * 8
   }
 
-	// TODO: this probably needs an else case where we compute size from walking
-	// the typedef, which we will do anyway.
-	if hasAttr(typeEntry, dwarf.AttrByteSize) || hasAttr(typeEntry, dwarf.AttrBitSize) {
-		proxy.BitSize = GetBitSize(typeEntry)
-	}
-
 	// Need to handle traversing through array entries to get to the underlying typedefs.
   //
   // The trick is understanding where the reader is pointing at each step along the way.
@@ -78,8 +72,14 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		fmt.Println(FormatEntryInfo(typeEntry))
     ranges, _ := GetArrayRanges(reader, e)  
     proxy.ArrayRanges = ranges
-    // Having resolved the array information the real type lies behind
+    // Having resolved the array information the real type is behind the ArrayType Entry
     typeEntry, _ = GetTypeEntry(reader, typeEntry)
+	}
+
+	// TODO: this probably needs an else case where we compute size from walking
+	// the typedef, which we will do anyway.
+	if hasAttr(typeEntry, dwarf.AttrByteSize) || hasAttr(typeEntry, dwarf.AttrBitSize) {
+		proxy.BitSize = GetBitSize(typeEntry)
 	}
 
 	fmt.Println("Parsing typedef for:")
