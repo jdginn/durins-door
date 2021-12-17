@@ -61,6 +61,7 @@ func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
 	return e, err
 }
 
+// Find the size of the type defined by this entry, in bits
 func GetBitSize(entry *dwarf.Entry) int {
 	if hasAttr(entry, dwarf.AttrBitSize) {
 		return entry.Val(dwarf.AttrBitSize).(int)
@@ -69,7 +70,7 @@ func GetBitSize(entry *dwarf.Entry) int {
 	}
 }
 
-// Display key information about this entry; strive to be easily readable.
+// Format key information about this entry as a string; strive to be easily readable.
 func FormatEntryInfo(entry *dwarf.Entry) string {
 	// JDG TODO: make sure I'm using the right DW_AT names here
 	var str string
@@ -77,6 +78,7 @@ func FormatEntryInfo(entry *dwarf.Entry) string {
 	str += fmt.Sprintf("  Children: %v\n", entry.Children)
 	str += fmt.Sprintf("  Offset: %v\n", entry.Offset)
 	for _, field := range entry.Field {
+    // str += fmt.Sprintf("  %s: %v", field.Val)
 		if field.Attr == dwarf.AttrName {
 			name := field.Val.(string)
 			str += fmt.Sprintf("  DW_AT_name: %s\n", name)
@@ -99,6 +101,15 @@ func FormatEntryInfo(entry *dwarf.Entry) string {
 		}
 		if field.Attr == dwarf.AttrType {
 			str += fmt.Sprintf("  DW_AT_type_die at offset: %v\n", field.Val)
+		}
+		if field.Attr == dwarf.AttrDataLocation{
+			str += fmt.Sprintf("  DW_AT_data_location: %v\n", field.Val)
+		}
+		if field.Attr == dwarf.AttrDataMemberLoc{
+			str += fmt.Sprintf("  DW_AT_data_member_loc: %v\n", field.Val)
+		}
+		if field.Attr == dwarf.AttrDataBitOffset{
+			str += fmt.Sprintf("  DW_AT_data_bit_offset: %v\n", field.Val)
 		}
 	}
 	return str
