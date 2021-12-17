@@ -74,10 +74,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
     typeEntry, _ = GetTypeEntry(reader, typeEntry)
 	}
 
-  if typeEntry.Tag == dwarf.TagTypedef{
-    typeEntry, _ = GetTypeEntry(reader, typeEntry)
-  }
-
 	// TODO: this probably needs an else case where we compute size from walking
 	// the typedef, which we will do anyway.
 	if hasAttr(typeEntry, dwarf.AttrByteSize) || hasAttr(typeEntry, dwarf.AttrBitSize) {
