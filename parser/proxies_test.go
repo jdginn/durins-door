@@ -92,9 +92,6 @@ func TestNewTypeDefProxy(t *testing.T) {
 		{
 			Name:    "sponsors",
 			BitSize: 16,
-			// TODO: I'm fairly ceratain this is correct and the program is currently
-			// generating bad output but I will make this pass temporarily to evaluate
-			// some additional testcases to probe my theory
 			StructOffset: 192,
 			ArrayRanges:  []int{4},
 			Children:     make([]TypeDefProxy, 0),
