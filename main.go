@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-import "github.com/jdginn/dwarf-experiments/parser"
+import "github.com/jdginn/dwarf-explore/parser"
 
 func completer(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
