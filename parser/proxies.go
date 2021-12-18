@@ -39,16 +39,6 @@ type TypeDefProxy struct {
 	Children    []TypeDefProxy
 }
 
-func (p *TypeDefProxy) string() string {
-	// TODO: for now, we don't print children
-	var str string = fmt.Sprintf("Typedef %s\n  BitSize: %d\n  ArrayRanges %v\n  Children %#v\n", p.Name, p.BitSize, p.ArrayRanges, p.Children)
-	return str
-}
-
-func (p *TypeDefProxy) GoString() string {
-	return p.string()
-}
-
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 	typeEntry, _ := GetTypeEntry(reader, e)
 	proxy := &TypeDefProxy{
@@ -118,8 +108,40 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 	return proxy
 }
 
+func (p *TypeDefProxy) string() string {
+	// TODO: for now, we don't print children
+	var str string = fmt.Sprintf("Typedef %s\n  BitSize: %d\n  ArrayRanges %v\n  Children %#v\n", p.Name, p.BitSize, p.ArrayRanges, p.Children)
+	return str
+}
+
+func (p *TypeDefProxy) GoString() string {
+	return p.string()
+}
+
 type VariableProxy struct {
+  // TODO: split this out from the notion of having children?
+  // i.e. define type information element-wise rather than wholesale
 	Type    TypeDefProxy
-	Address int
-	Value   int
+	Address int64
+	Value   int64
+  Children []VariableProxy
+}
+
+// Construct a new VariableProxy 
+func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) *VariableProxy {
+  proxy := &VariableProxy{
+    Type: *NewTypeDefProxy(reader, entry),
+    Address: ParseLocation(GetLocation(entry)),
+    Value: 0,
+  } 
+  return proxy
+}
+
+func NewVariableProxyFromTypedef(typeDef TypeDefProxy) *VariableProxy {
+  proxy := &VariableProxy{
+    Type: typeDef,
+    Address: 0,
+    Value: 0,
+  } 
+  return proxy
 }
