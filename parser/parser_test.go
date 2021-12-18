@@ -48,9 +48,15 @@ func testGetTypeEntry(t *testing.T, reader *dwarf.Reader, entryName string) (*dw
   if err != nil {
     t.Fatal(err)
   }
+  if entry == nil {
+    t.Fatal("Failed to retrieve entry " + entryName)
+  }
   typeEntry, err := GetTypeEntry(reader, entry)
   if err != nil {
     t.Fatal("Could not get typedef", err)
+  }
+  if typeEntry == nil {
+    t.Fatal("Failed to retrieve type entry for " + entryName)
   }
   return typeEntry
 }
@@ -59,6 +65,9 @@ func TestGetTypeEntry(t *testing.T) {
   reader, _ := GetReader(testcaseFilename)
   var e *dwarf.Entry
   e = testGetTypeEntry(t, reader, "formula_1_teams")
+  if e == nil {
+    t.Fatal("entry is nil")
+  }
   assert.Equal(t, e.Tag, dwarf.TagArrayType) 
   e = testGetTypeEntry(t, reader, "drivers")
   assert.Equal(t, e.Tag, dwarf.TagArrayType) 
