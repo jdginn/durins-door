@@ -59,7 +59,7 @@ func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
 func GetBitSize(entry *dwarf.Entry) (int, error) {
 	if hasAttr(entry, dwarf.AttrBitSize) {
 		return entry.Val(dwarf.AttrBitSize).(int), nil
-  } else if hasAttr(entry, dwarf.AttrBitSize) {
+  } else if hasAttr(entry, dwarf.AttrByteSize) {
 		return int(entry.Val(dwarf.AttrByteSize).(int64) * 8), nil
 	} else {
     return 0, errors.New(fmt.Sprintf("Could not get bit size of entry:\n%v", FormatEntryInfo(entry))) 
