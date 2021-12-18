@@ -12,14 +12,18 @@ type TypeEntryProxy struct {
 	BitSize int
 }
 
-func NewTypeEntryProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeEntryProxy {
+func NewTypeEntryProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeEntryProxy, error) {
 	typeEntry, _ := GetTypeEntry(reader, e)
+  bitSize, err := GetBitSize(typeEntry)
+  if err != nil {
+    return &TypeEntryProxy{}, err
+  }
 	proxy := &TypeEntryProxy{
 		Name:    e.Val(dwarf.AttrName).(string),
 		Offset:  int(typeEntry.Offset),
-		BitSize: GetBitSize(typeEntry),
+		BitSize: bitSize,
 	}
-	return proxy
+	return proxy, err
 }
 
 // Outward-facing representation of a typedef representing what a user
@@ -39,7 +43,7 @@ type TypeDefProxy struct {
 	Children    []TypeDefProxy
 }
 
-func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
+func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
 	typeEntry, _ := GetTypeEntry(reader, e)
 	proxy := &TypeDefProxy{
 		Name:         e.Val(dwarf.AttrName).(string),
@@ -48,6 +52,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 		ArrayRanges:  []int{0},
 		Children:     make([]TypeDefProxy, 0),
 	}
+  var err error = nil
 
   // The offset into the struct is defined by the member, not its type
   if hasAttr(e, dwarf.AttrDataMemberLoc) {
@@ -67,7 +72,9 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 	// TODO: this probably needs an else case where we compute size from walking
 	// the typedef, which we will do anyway.
 	if hasAttr(typeEntry, dwarf.AttrByteSize) || hasAttr(typeEntry, dwarf.AttrBitSize) {
-		proxy.BitSize = GetBitSize(typeEntry)
+    var bitSize int
+    bitSize, err = GetBitSize(typeEntry)
+		proxy.BitSize = bitSize
 	}
 
 	fmt.Println("Parsing type entry:")
@@ -95,7 +102,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 
 			// Note that constructing proxies for all children makes this constructor
 			// itself recursive.
-			childProxy := NewTypeDefProxy(reader, child)
+			childProxy, err := NewTypeDefProxy(reader, child)
 			fmt.Printf("%#v\n", childProxy)
 			// TODO: is this the right way to do this in go?
 			proxy.Children = append(proxy.Children, *childProxy)
@@ -105,7 +112,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) *TypeDefProxy {
 			reader.Next()
 		}
 	}
-	return proxy
+	return proxy, err
 }
 
 func (p *TypeDefProxy) string() string {
@@ -128,13 +135,14 @@ type VariableProxy struct {
 }
 
 // Construct a new VariableProxy 
-func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) *VariableProxy {
+func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy, error) {
+  typeDefProxy, err := NewTypeDefProxy(reader, entry)
   proxy := &VariableProxy{
-    Type: *NewTypeDefProxy(reader, entry),
+    Type: *typeDefProxy,
     Address: ParseLocation(GetLocation(entry)),
     Value: 0,
   } 
-  return proxy
+  return proxy, err
 }
 
 func NewVariableProxyFromTypedef(typeDef TypeDefProxy) *VariableProxy {

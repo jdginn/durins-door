@@ -10,25 +10,30 @@ func TestNewTypeEntryProxy(t *testing.T) {
 	reader, _ := GetReader(testcaseFilename)
 	var p *TypeEntryProxy
 	var e *dwarf.Entry
+  var err error
 
 	e, _ = GetEntry(reader, "Driver")
-	p = NewTypeEntryProxy(reader, e)
+	p, err = NewTypeEntryProxy(reader, e)
+  assert.Equal(t, nil, err)
 	assert.Equal(t, "Driver", p.Name)
 	assert.Equal(t, int(12*8), p.BitSize)
 
 	e, _ = GetEntry(reader, "char")
-	p = NewTypeEntryProxy(reader, e)
+	p, err = NewTypeEntryProxy(reader, e)
+  assert.Equal(t, nil, err)
 	assert.Equal(t, "char", p.Name)
 	assert.Equal(t, int(8), p.BitSize)
 
 	// Make sure we can get the same proxy twice
 	e, _ = GetEntry(reader, "Driver")
-	p = NewTypeEntryProxy(reader, e)
+	p, err = NewTypeEntryProxy(reader, e)
+  assert.Equal(t, nil, err)
 	assert.Equal(t, "Driver", p.Name)
 	assert.Equal(t, int(12*8), p.BitSize)
 
 	e, _ = GetEntry(reader, "char")
-	p = NewTypeEntryProxy(reader, e)
+	p, err = NewTypeEntryProxy(reader, e)
+  assert.Equal(t, nil, err)
 	assert.Equal(t, "char", p.Name)
 	assert.Equal(t, int(8), p.BitSize)
 }
@@ -37,17 +42,22 @@ func TestNewTypeDefProxy(t *testing.T) {
 	reader, _ := GetReader(testcaseFilename)
 	// var driverProxy *TypeDefProxy
 	var e *dwarf.Entry
+  var err error
 
 	// Start with a few trivial cases
-	e, _ = GetEntry(reader, "char")
-  driverProxy := NewTypeDefProxy(reader, e)
+	e, err = GetEntry(reader, "char")
+  assert.Equal(t, nil, err)
+  driverProxy, err := NewTypeDefProxy(reader, e)
+  assert.Equal(t, nil, err)
 	assert.Equal(t, "char", driverProxy.Name)
 	assert.Equal(t, int(8), driverProxy.BitSize)
 	assert.Equal(t, make([]TypeDefProxy, 0), driverProxy.Children)
 
 	// Move on to non-trivial cases in which Children must actually be populated
-	e, _ = GetEntry(reader, "Driver")
-	driverProxy = NewTypeDefProxy(reader, e)
+	e, err = GetEntry(reader, "Driver")
+  assert.Equal(t, nil, err)
+	driverProxy, err = NewTypeDefProxy(reader, e)
+  assert.Equal(t, nil, err)
   // NOTE: clang chooses to pad bools out to 4 bytes despite the typical implementation
   // being only 1 byte
 	var driverChildren = []TypeDefProxy {
@@ -78,8 +88,10 @@ func TestNewTypeDefProxy(t *testing.T) {
 	assert.Equal(t, driverChildren, driverProxy.Children)
 
 	// A type that includes the type from the previous test
-	e, _ = GetEntry(reader, "Team")
-  teamProxy := NewTypeDefProxy(reader, e)
+	e, err = GetEntry(reader, "Team")
+  assert.Equal(t, nil, err)
+  teamProxy, err := NewTypeDefProxy(reader, e)
+  assert.Equal(t, nil, err)
 
 	var teamChildren = []TypeDefProxy {
 		{

@@ -50,18 +50,20 @@ func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
 		e, err = getEntryByNameFromRemaining(reader, name)
 	}
 	if e == nil {
-		err = errors.New(fmt.Sprintf("Could not find %v", name))
+		err = errors.New(fmt.Sprintf("Could not find entry %v", name))
 	}
 	return e, err
 }
 
 // Find the size of the type defined by this entry, in bits
-func GetBitSize(entry *dwarf.Entry) int {
+func GetBitSize(entry *dwarf.Entry) (int, error) {
 	if hasAttr(entry, dwarf.AttrBitSize) {
-		return entry.Val(dwarf.AttrBitSize).(int)
+		return entry.Val(dwarf.AttrBitSize).(int), nil
+  } else if hasAttr(entry, dwarf.AttrBitSize) {
+		return int(entry.Val(dwarf.AttrByteSize).(int64) * 8), nil
 	} else {
-		return int(entry.Val(dwarf.AttrByteSize).(int64) * 8)
-	}
+    return 0, errors.New(fmt.Sprintf("Could not get bit size of entry:\n%v", FormatEntryInfo(entry))) 
+  }
 }
 
 // Return a slice with en entry for the range of each array dimension
@@ -81,12 +83,7 @@ func GetArrayRanges(reader *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
     // When we've finished iterating over members, we are done with the meaningful
     // children of this typedef. We are also finished if we reach the end of the DWARF
     // section during this iteration.
-    if subrange == nil {
-      fmt.Println("Bailing from populating children because we saw the final entry in the DWARF")
-      break
-    }
-    if subrange.Tag == 0 {
-      fmt.Println("Bailing from populating children because we found a null entry")
+    if (subrange == nil || subrange.Tag == 0) {
       break
     }
 
@@ -99,6 +96,9 @@ func GetArrayRanges(reader *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
 
 // Format key information about this entry as a string; strive to be easily readable.
 func FormatEntryInfo(entry *dwarf.Entry) string {
+  if entry == nil {
+    fmt.Println("ERROR: nil entry passed") 
+  }
 	// JDG TODO: make sure I'm using the right DW_AT names here
 	var str string
 	str = fmt.Sprintf("Tag: %s\n", entry.Tag)
@@ -194,10 +194,11 @@ func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error
 			typeDieOffset := field.Val.(dwarf.Offset)
 			reader.Seek(typeDieOffset)
 			typeDie, _ := reader.Next()
-      if typeDie.Tag == dwarf.TagTypedef {
-        typeDie, _ = GetTypeEntry(reader, typeDie)
-      }
-      break
+	    return typeDie, nil
+      // if typeDie.Tag == dwarf.TagTypedef {
+      //   typeDie, _ = GetTypeEntry(reader, typeDie)
+      // }
+      // break
 		}
 	}
 	return typeDie, nil
