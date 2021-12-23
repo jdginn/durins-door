@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Description of
+// Relatively toothless sibling of TypeDefProxy
 type TypeEntryProxy struct {
 	Name    string
 	Offset  int
@@ -14,10 +14,10 @@ type TypeEntryProxy struct {
 
 func NewTypeEntryProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeEntryProxy, error) {
 	typeEntry, _ := GetTypeEntry(reader, e)
-  bitSize, err := GetBitSize(typeEntry)
-  if err != nil {
-    return &TypeEntryProxy{}, err
-  }
+	bitSize, err := GetBitSize(typeEntry)
+	if err != nil {
+		return &TypeEntryProxy{}, err
+	}
 	proxy := &TypeEntryProxy{
 		Name:    e.Val(dwarf.AttrName).(string),
 		Offset:  int(typeEntry.Offset),
@@ -39,13 +39,13 @@ type TypeDefProxy struct {
 	Name         string
 	BitSize      int
 	StructOffset int
-	ArrayRanges []int
-	Children    []TypeDefProxy
+	ArrayRanges  []int
+	Children     []TypeDefProxy
 }
 
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
 	typeEntry, _ := GetTypeEntry(reader, e)
-  fmt.Println(FormatEntryInfo(e))
+	fmt.Println(FormatEntryInfo(e))
 	proxy := &TypeDefProxy{
 		Name:         e.Val(dwarf.AttrName).(string),
 		BitSize:      0,
@@ -53,30 +53,29 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		ArrayRanges:  []int{0},
 		Children:     make([]TypeDefProxy, 0),
 	}
-  var err error = nil
+	var err error = nil
 
-  // The offset into the struct is defined by the member, not its type
-  if hasAttr(e, dwarf.AttrDataMemberLoc) {
-    proxy.StructOffset = int(e.Val(dwarf.AttrDataMemberLoc).(int64)) * 8
-  }
+	// The offset into the struct is defined by the member, not its type
+	if hasAttr(e, dwarf.AttrDataMemberLoc) {
+		proxy.StructOffset = int(e.Val(dwarf.AttrDataMemberLoc).(int64)) * 8
+	}
 
 	// Need to handle traversing through array entries to get to the underlying typedefs.
 	if typeEntry.Tag == dwarf.TagArrayType {
-		// fmt.Println("Found a TagArrayType to get to:")
-    ranges, _ := GetArrayRanges(reader, e)  
-    proxy.ArrayRanges = ranges
-    // Having resolved the array information the real type is behind the ArrayType Entry
-    // This entry describes the array
-    typeEntry, _ = GetTypeEntry(reader, typeEntry)
-    // This entry describes the type of object the array is made of
-    typeEntry, _ = GetTypeEntry(reader, typeEntry)
+		ranges, _ := GetArrayRanges(reader, e)
+		proxy.ArrayRanges = ranges
+		// Having resolved the array information the real type is behind the ArrayType Entry
+		// This entry describes the array
+		typeEntry, _ = GetTypeEntry(reader, typeEntry)
+		// This entry describes the type of object the array is made of
+		typeEntry, _ = GetTypeEntry(reader, typeEntry)
 	}
 
 	// TODO: this probably needs an else case where we compute size from walking
 	// the typedef, which we will do anyway.
 	if hasAttr(typeEntry, dwarf.AttrByteSize) || hasAttr(typeEntry, dwarf.AttrBitSize) {
-    var bitSize int
-    bitSize, err = GetBitSize(typeEntry)
+		var bitSize int
+		bitSize, err = GetBitSize(typeEntry)
 		proxy.BitSize = bitSize
 	}
 
@@ -126,30 +125,32 @@ func (p *TypeDefProxy) GoString() string {
 }
 
 type VariableProxy struct {
-  // TODO: split this out from the notion of having children?
-  // i.e. define type information element-wise rather than wholesale
-	Type    TypeDefProxy
-	Address int64
-	Value   int64
-  Children []VariableProxy
+	// TODO: split this out from the notion of having children?
+	// i.e. define type information element-wise rather than wholesale
+	Name     string
+	Type     TypeDefProxy
+	Address  int64
+	Value    int64
+	Children []VariableProxy
 }
 
-// Construct a new VariableProxy 
+// Construct a new VariableProxy
 func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy, error) {
-  typeDefProxy, err := NewTypeDefProxy(reader, entry)
-  proxy := &VariableProxy{
-    Type: *typeDefProxy,
-    Address: ParseLocation(GetLocation(entry)),
-    Value: 0,
-  } 
-  return proxy, err
+	typeDefProxy, err := NewTypeDefProxy(reader, entry)
+	proxy := &VariableProxy{
+		Name:    entry.Val(dwarf.AttrName).(string),
+		Type:    *typeDefProxy,
+		Address: ParseLocation(GetLocation(entry)),
+		Value:   0,
+	}
+	return proxy, err
 }
 
 func NewVariableProxyFromTypedef(typeDef TypeDefProxy) *VariableProxy {
-  proxy := &VariableProxy{
-    Type: typeDef,
-    Address: 0,
-    Value: 0,
-  } 
-  return proxy
+	proxy := &VariableProxy{
+		Type:    typeDef,
+		Address: 0,
+		Value:   0,
+	}
+	return proxy
 }
