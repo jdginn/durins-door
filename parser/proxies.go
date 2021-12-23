@@ -45,6 +45,7 @@ type TypeDefProxy struct {
 
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
 	typeEntry, _ := GetTypeEntry(reader, e)
+  fmt.Println(FormatEntryInfo(e))
 	proxy := &TypeDefProxy{
 		Name:         e.Val(dwarf.AttrName).(string),
 		BitSize:      0,
@@ -77,13 +78,13 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		proxy.BitSize = bitSize
 	}
 
-	fmt.Println("Parsing type entry:")
-	fmt.Println(FormatEntryInfo(typeEntry))
+	// fmt.Println("Parsing type entry:")
+	// fmt.Println(FormatEntryInfo(typeEntry))
 	if typeEntry.Children {
 		for {
 			child, err := reader.Next()
-			fmt.Println("Next child:")
-			fmt.Println(FormatEntryInfo(child))
+			// fmt.Println("Next child:")
+			// fmt.Println(FormatEntryInfo(child))
 			if err != nil {
 				fmt.Println("Error iterating children; **this error handling needs to be improved!**")
 			}
@@ -92,7 +93,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 			// children of this typedef. We are also finished if we reach the end of the DWARF
 			// section during this iteration.
 			if child == nil {
-				fmt.Println("Bailing from populating children because we saw the final entry in the DWARF")
+				// fmt.Println("Bailing from populating children because we saw the final entry in the DWARF")
 				break
 			}
 			if child.Tag == 0 {
