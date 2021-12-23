@@ -63,10 +63,12 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 	// Need to handle traversing through array entries to get to the underlying typedefs.
 	if typeEntry.Tag == dwarf.TagArrayType {
 		// fmt.Println("Found a TagArrayType to get to:")
-		// fmt.Println(FormatEntryInfo(typeEntry))
     ranges, _ := GetArrayRanges(reader, e)  
     proxy.ArrayRanges = ranges
     // Having resolved the array information the real type is behind the ArrayType Entry
+    // This entry describes the array
+    typeEntry, _ = GetTypeEntry(reader, typeEntry)
+    // This entry describes the type of object the array is made of
     typeEntry, _ = GetTypeEntry(reader, typeEntry)
 	}
 
@@ -83,8 +85,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 	if typeEntry.Children {
 		for {
 			child, err := reader.Next()
-			// fmt.Println("Next child:")
-			// fmt.Println(FormatEntryInfo(child))
 			if err != nil {
 				fmt.Println("Error iterating children; **this error handling needs to be improved!**")
 			}
@@ -104,7 +104,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 			// Note that constructing proxies for all children makes this constructor
 			// itself recursive.
 			childProxy, err := NewTypeDefProxy(reader, child)
-			fmt.Printf("%#v\n", childProxy)
 			// TODO: is this the right way to do this in go?
 			proxy.Children = append(proxy.Children, *childProxy)
 			// How do we appropriately parse this stuff without having to jump around a bunch in the reader?
