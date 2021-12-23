@@ -137,10 +137,11 @@ type VariableProxy struct {
 // Construct a new VariableProxy
 func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy, error) {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
+  loc, err := GetLocation(entry)
 	proxy := &VariableProxy{
 		Name:    entry.Val(dwarf.AttrName).(string),
 		Type:    *typeDefProxy,
-		Address: ParseLocation(GetLocation(entry)),
+		Address: ParseLocation(loc),
 		Value:   0,
 	}
 	return proxy, err

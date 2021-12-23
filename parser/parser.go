@@ -115,7 +115,7 @@ func FormatEntryInfo(entry *dwarf.Entry) string {
 			str += fmt.Sprintf("  DW_AT_byte_size: %d\n", byte_size)
 		}
 		if field.Attr == dwarf.AttrLocation {
-			location := GetLocation(entry)
+			location, err := GetLocation(entry)
 			str += fmt.Sprintf("  DW_AT_location: %x\n", ParseLocation(location))
 		}
 		if field.Attr == dwarf.AttrDataMemberLoc {
@@ -163,8 +163,14 @@ func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
 	return false
 }
 
-func GetLocation(entry *dwarf.Entry) []uint8 {
-	return entry.Val(dwarf.AttrDataLocation).([]uint8)
+func GetLocation(entry *dwarf.Entry) ([]uint8, error) {
+  var err error = nil
+  loc := entry.Val(dwarf.AttrDataLocation)
+  if loc == nil {
+		err = errors.New(fmt.Sprintf("Could not find data location for %v", entry))
+    return nil, err
+  }
+	return entry.Val(dwarf.AttrDataLocation).([]uint8), nil
 }
 
 // Translate a DW_AT_locationn attribute into an address
