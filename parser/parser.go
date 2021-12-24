@@ -165,12 +165,12 @@ func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
 
 func GetLocation(entry *dwarf.Entry) ([]uint8, error) {
   var err error = nil
-  loc := entry.Val(dwarf.AttrDataLocation)
+  loc := entry.Val(dwarf.AttrLocation)
   if loc == nil {
 		err = errors.New(fmt.Sprintf("Could not find data location for %v", entry))
     return nil, err
   }
-	return entry.Val(dwarf.AttrDataLocation).([]uint8), nil
+	return entry.Val(dwarf.AttrLocation).([]uint8), nil
 }
 
 // Translate a DW_AT_locationn attribute into an address
