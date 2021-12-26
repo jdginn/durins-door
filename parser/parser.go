@@ -214,3 +214,16 @@ func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error
 	}
 	return typeDie, nil
 }
+
+// Repeatedly call GetTypeEntry until arriving at an entry that truly describes
+// the underlying type of this entry. Skip over array and other non-typedef
+// entries
+func ResolveTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
+  typeEntry, err := GetTypeEntry(reader, entry)
+  switch typeEntry.Tag {
+    case dwarf.TagArrayType:
+      return ResolveTypeEntry(reader, typeEntry)
+    default:
+      return typeEntry, err
+  }
+}
