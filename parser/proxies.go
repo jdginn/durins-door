@@ -46,17 +46,22 @@ type TypeDefProxy struct {
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
   var arrayRanges = []int{0}
 	var err error = nil
-  fmt.Println("NewTypeDefProxy")
-	fmt.Println(FormatEntryInfo(e))
+  // fmt.Println("NewTypeDefProxy")
+	// fmt.Println(FormatEntryInfo(e))
 	typeEntry, _ := GetTypeEntry(reader, e)
 
-  if typeEntry.Tag == dwarf.TagArrayType{
-    arrayRanges, err = GetArrayRanges(reader, typeEntry)
-    typeEntry, err = GetTypeEntry(reader, typeEntry)
-  }
+	// Need to handle traversing through array entries to get to the underlying typedefs.
+	if typeEntry.Tag == dwarf.TagArrayType {
+		arrayRanges, _ = GetArrayRanges(reader, e)
+		// Having resolved the array information the real type is behind the ArrayType Entry
+		// This entry describes the array
+		typeEntry, _ = GetTypeEntry(reader, typeEntry)
+		// This entry describes the type of object the array is made of
+		typeEntry, _ = GetTypeEntry(reader, typeEntry)
+	}
 
-  fmt.Println("Type entry:")
-	fmt.Println(FormatEntryInfo(typeEntry))
+  // fmt.Println("Type entry:")
+	// fmt.Println(FormatEntryInfo(typeEntry))
 
   // TODO: handle the situation where we have no AttrName
 	proxy := &TypeDefProxy{
@@ -72,16 +77,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		proxy.StructOffset = int(e.Val(dwarf.AttrDataMemberLoc).(int64)) * 8
 	}
 
-	// Need to handle traversing through array entries to get to the underlying typedefs.
-	if typeEntry.Tag == dwarf.TagArrayType {
-		ranges, _ := GetArrayRanges(reader, e)
-		proxy.ArrayRanges = ranges
-		// Having resolved the array information the real type is behind the ArrayType Entry
-		// This entry describes the array
-		typeEntry, _ = GetTypeEntry(reader, typeEntry)
-		// This entry describes the type of object the array is made of
-		typeEntry, _ = GetTypeEntry(reader, typeEntry)
-	}
 
 	// TODO: this probably needs an else case where we compute size from walking
 	// the typedef, which we will do anyway.
