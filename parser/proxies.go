@@ -151,7 +151,9 @@ func (p *VariableProxy) GoString() string {
 
 // Store data internally as bytes and parse into fields on demand
 
-func (p *VariableProxy) Set(value []byte) {}
+func (p *VariableProxy) Set(value []byte) {
+  p.value = value
+}
 
 func (p *VariableProxy) SetField(field string, value []byte) {}
 
