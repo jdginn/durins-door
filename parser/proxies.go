@@ -5,27 +5,6 @@ import (
 	"fmt"
 )
 
-// Relatively toothless sibling of TypeDefProxy
-type TypeEntryProxy struct {
-	Name    string
-	Offset  int
-	BitSize int
-}
-
-func NewTypeEntryProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeEntryProxy, error) {
-	typeEntry, _ := GetTypeEntry(reader, e)
-	bitSize, err := GetBitSize(typeEntry)
-	if err != nil {
-		return &TypeEntryProxy{}, err
-	}
-	proxy := &TypeEntryProxy{
-		Name:    e.Val(dwarf.AttrName).(string),
-		Offset:  int(typeEntry.Offset),
-		BitSize: bitSize,
-	}
-	return proxy, err
-}
-
 // Outward-facing representation of a typedef representing what a user
 // may care about without any DWARF implementation information. This proxy
 // represents the key information required to understand the layout of a particular type
@@ -130,12 +109,10 @@ func (p *TypeDefProxy) GoString() string {
 }
 
 type VariableProxy struct {
-	// TODO: split this out from the notion of having children?
-	// i.e. define type information element-wise rather than wholesale
 	Name     string
 	Type     TypeDefProxy
 	Address  int64
-	Value    []byte
+	value    []byte
 	Children []VariableProxy
 }
 
@@ -147,27 +124,31 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 		Name:    entry.Val(dwarf.AttrName).(string),
 		Type:    *typeDefProxy,
 		Address: ParseLocation(loc),
-		Value:   []byte{},
+		value:   []byte{},
 	}
 	return proxy, err
 }
 
-func NewVariableProxyFromTypedef(typeDef TypeDefProxy) *VariableProxy {
-	proxy := &VariableProxy{
-		Type:    typeDef,
-		Address: 0,
-		Value:   []byte{},
-	}
-	return proxy
-}
+func formatVariableName(name string) (string) {return ""}
 
-// TODO: define interface for accessing this class:
-// func SetField(field, value)
-// func Set(value)
-// func GetField(field) (int64)
-// func Get() ([]bytes)
+func (p *VariableProxy) string() string {return ""}
+
+func (p *VariableProxy) GoString() string {return ""}
 
 // Store data internally as bytes and parse into fields on demand
 
-// Do not populate children at all; simply use Get/Set
-// to access children based on data contained in the typedef proxy
+func (p *VariableProxy) Set(value []byte) {}
+
+func (p *VariableProxy) SetField(field string, value []byte) {}
+
+func (p *VariableProxy) Get() ([]byte) {return p.value}
+
+func (p *VariableProxy) GetField(field string) (int64) {return 0}
+
+func (p *VariableProxy) Write(value []byte) {}
+
+func (p *VariableProxy) WriteField(field string, value []byte) {}
+
+func (p *VariableProxy) Read(value []byte) {}
+
+func (p *VariableProxy) ReadField(field string, value []byte) {}
