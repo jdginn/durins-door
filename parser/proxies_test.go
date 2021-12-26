@@ -256,14 +256,28 @@ func TestGetSetVariableProxy(t *testing.T) {
     value: byteLiteral,
 	}
  
-  val, _ := vp.Get()
+  val, err := vp.Get()
   assert.Equal(t, byteLiteral, val)
-  foo, _ := vp.GetField("foo")
+  foo, err := vp.GetField("foo")
   assert.Equal(t, uint64(0xfe), foo)
-  bar, _ := vp.GetField("bar")
+  bar, err := vp.GetField("bar")
   assert.Equal(t, uint64(0xedbeefaa), bar)
-  baz, _ := vp.GetField("baz")
+  baz, err := vp.GetField("baz")
   assert.Equal(t, uint64(0xbb), baz)
+  assert.Nil(t, err)
 
-  // TODO: check range for sets
+  // Should fail because this data cannot fit in this variable's type
+  err = vp.Set([]byte{0x22, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77})
+  assert.NotNil(t, err)
+
+  err = vp.Set([]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66})
+
+  assert.Nil(t, err)
+  foo, err = vp.GetField("foo")
+  assert.Equal(t, uint64(0x11), foo)
+  bar, err = vp.GetField("bar")
+  assert.Equal(t, uint64(0x22334455), bar)
+  baz, err = vp.GetField("baz")
+  assert.Equal(t, uint64(0x66), baz)
+  assert.Nil(t, err)
 }

@@ -159,8 +159,13 @@ func (p *VariableProxy) GoString() string {
 
 // Store data internally as bytes and parse into fields on demand
 
-func (p *VariableProxy) Set(value []byte) {
+func (p *VariableProxy) Set(value []byte) (error) {
+  var err error = nil
+  if len(value) * 8 > p.Type.BitSize {
+    err = fmt.Errorf("Attempted to set value size %d bits, larger than type with size %d bits", len(value) * 8, p.Type.BitSize)
+  }
 	p.value = value
+  return err
 }
 
 func (p *VariableProxy) SetField(field string, value []byte) {}
