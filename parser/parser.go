@@ -179,7 +179,6 @@ func ParseLocation(location []uint8) int64 {
     fmt.Println("Cannot parse location for an empty slice!")
     return 0
   }
-  fmt.Printf("location: %#v\n", location)
 	// Ignore the first entry in the slice
 	// --> This somehow communicates a format?
 	// Build the last slice from right to left
@@ -195,6 +194,8 @@ func ParseLocation(location []uint8) int64 {
 // Return the entry defining the type for a given entry. Returns self if
 // no such entry can be found. Leaves the reader at the new entry.
 func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
+
+  var err error = nil
 	if !hasAttr(entry, dwarf.AttrType) {
 		// fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.Val(dwarf.AttrName))
 		return entry, nil
@@ -204,15 +205,17 @@ func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error
 		if field.Attr == dwarf.AttrType {
 			typeDieOffset := field.Val.(dwarf.Offset)
 			reader.Seek(typeDieOffset)
-			typeDie, _ := reader.Next()
-			return typeDie, nil
-			// if typeDie.Tag == dwarf.TagTypedef {
-			//   typeDie, _ = GetTypeEntry(reader, typeDie)
-			// }
-			// break
+			typeDie, err = reader.Next()
+			// return typeDie, nil
 		}
 	}
-	return typeDie, nil
+
+  if typeDie.Tag == dwarf.TagConstType {
+    typeDie, err = GetTypeEntry(reader, typeDie)
+    typeDie, err = GetTypeEntry(reader, typeDie)
+  }
+
+	return typeDie, err
 }
 
 // Repeatedly call GetTypeEntry until arriving at an entry that truly describes
