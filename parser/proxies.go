@@ -129,11 +129,16 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 	return proxy, err
 }
 
-func formatVariableName(name string) (string) {return ""}
+// func (p *VariableProxy) navigateMembers(path string) (TypeDefProxy, error) {return nil, nil}
 
-func (p *VariableProxy) string() string {return ""}
+func (p *VariableProxy) string() string {
+  var str string = fmt.Sprintf("Variable %s at address %x of type:\n%v", p.Name, p.Address, p.Type.string())
+  return str
+}
 
-func (p *VariableProxy) GoString() string {return ""}
+func (p *VariableProxy) GoString() string {
+  return p.string()
+}
 
 // Store data internally as bytes and parse into fields on demand
 
