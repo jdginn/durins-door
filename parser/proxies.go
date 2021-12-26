@@ -44,9 +44,9 @@ type TypeDefProxy struct {
 }
 
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
-  var arrayRanges = []int{0}
+	var arrayRanges = []int{0}
 	var err error = nil
-  // fmt.Println("NewTypeDefProxy")
+	// fmt.Println("NewTypeDefProxy")
 	// fmt.Println(FormatEntryInfo(e))
 	typeEntry, _ := GetTypeEntry(reader, e)
 
@@ -60,10 +60,10 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		typeEntry, _ = GetTypeEntry(reader, typeEntry)
 	}
 
-  // fmt.Println("Type entry:")
+	// fmt.Println("Type entry:")
 	// fmt.Println(FormatEntryInfo(typeEntry))
 
-  // TODO: handle the situation where we have no AttrName
+	// TODO: handle the situation where we have no AttrName
 	proxy := &TypeDefProxy{
 		Name:         e.Val(dwarf.AttrName).(string),
 		BitSize:      0,
@@ -77,7 +77,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		proxy.StructOffset = int(e.Val(dwarf.AttrDataMemberLoc).(int64)) * 8
 	}
 
-
 	// TODO: this probably needs an else case where we compute size from walking
 	// the typedef, which we will do anyway.
 	if hasAttr(typeEntry, dwarf.AttrByteSize) || hasAttr(typeEntry, dwarf.AttrBitSize) {
@@ -86,7 +85,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		proxy.BitSize = bitSize
 	}
 
-  // TODO: split this into its own method
+	// TODO: split this into its own method
 	if typeEntry.Children {
 		for {
 			child, err := reader.Next()
@@ -143,7 +142,7 @@ type VariableProxy struct {
 // Construct a new VariableProxy
 func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy, error) {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
-  loc, err := GetLocation(entry)
+	loc, err := GetLocation(entry)
 	proxy := &VariableProxy{
 		Name:    entry.Val(dwarf.AttrName).(string),
 		Type:    *typeDefProxy,

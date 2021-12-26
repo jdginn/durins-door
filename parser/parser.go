@@ -164,21 +164,21 @@ func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
 }
 
 func GetLocation(entry *dwarf.Entry) ([]uint8, error) {
-  var err error = nil
-  loc := entry.Val(dwarf.AttrLocation)
-  if loc == nil {
+	var err error = nil
+	loc := entry.Val(dwarf.AttrLocation)
+	if loc == nil {
 		err = errors.New(fmt.Sprintf("Could not find data location for %v", entry))
-    return nil, err
-  }
+		return nil, err
+	}
 	return entry.Val(dwarf.AttrLocation).([]uint8), nil
 }
 
 // Translate a DW_AT_locationn attribute into an address
 func ParseLocation(location []uint8) int64 {
-  if location == nil {
-    fmt.Println("Cannot parse location for an empty slice!")
-    return 0
-  }
+	if location == nil {
+		fmt.Println("Cannot parse location for an empty slice!")
+		return 0
+	}
 	// Ignore the first entry in the slice
 	// --> This somehow communicates a format?
 	// Build the last slice from right to left
@@ -195,7 +195,7 @@ func ParseLocation(location []uint8) int64 {
 // no such entry can be found. Leaves the reader at the new entry.
 func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
 
-  var err error = nil
+	var err error = nil
 	if !hasAttr(entry, dwarf.AttrType) {
 		// fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.Val(dwarf.AttrName))
 		return entry, nil
@@ -210,10 +210,10 @@ func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error
 		}
 	}
 
-  if typeDie.Tag == dwarf.TagConstType {
-    typeDie, err = GetTypeEntry(reader, typeDie)
-    typeDie, err = GetTypeEntry(reader, typeDie)
-  }
+	if typeDie.Tag == dwarf.TagConstType {
+		typeDie, err = GetTypeEntry(reader, typeDie)
+		typeDie, err = GetTypeEntry(reader, typeDie)
+	}
 
 	return typeDie, err
 }
@@ -222,11 +222,11 @@ func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error
 // the underlying type of this entry. Skip over array and other non-typedef
 // entries
 func ResolveTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
-  typeEntry, err := GetTypeEntry(reader, entry)
-  switch typeEntry.Tag {
-    case dwarf.TagArrayType:
-      return ResolveTypeEntry(reader, typeEntry)
-    default:
-      return typeEntry, err
-  }
+	typeEntry, err := GetTypeEntry(reader, entry)
+	switch typeEntry.Tag {
+	case dwarf.TagArrayType:
+		return ResolveTypeEntry(reader, typeEntry)
+	default:
+		return typeEntry, err
+	}
 }
