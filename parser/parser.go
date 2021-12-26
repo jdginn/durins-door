@@ -206,15 +206,8 @@ func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error
 			typeDieOffset := field.Val.(dwarf.Offset)
 			reader.Seek(typeDieOffset)
 			typeDie, err = reader.Next()
-			// return typeDie, nil
 		}
 	}
-
-	if typeDie.Tag == dwarf.TagConstType {
-		typeDie, err = GetTypeEntry(reader, typeDie)
-		typeDie, err = GetTypeEntry(reader, typeDie)
-	}
-
 	return typeDie, err
 }
 

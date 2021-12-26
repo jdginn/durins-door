@@ -24,10 +24,10 @@ type TypeDefProxy struct {
 
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
 	var arrayRanges = []int{0}
+  var name string
 	var err error = nil
-	// fmt.Println("NewTypeDefProxy")
-	// fmt.Println(FormatEntryInfo(e))
-	typeEntry, _ := GetTypeEntry(reader, e)
+	typeEntry, err := GetTypeEntry(reader, e)
+
 
 	// Need to handle traversing through array entries to get to the underlying typedefs.
 	if typeEntry.Tag == dwarf.TagArrayType {
@@ -35,16 +35,25 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		// Having resolved the array information the real type is behind the ArrayType Entry
 		// This entry describes the array
 		typeEntry, _ = GetTypeEntry(reader, typeEntry)
-		// This entry describes the type of object the array is made of
-		typeEntry, _ = GetTypeEntry(reader, typeEntry)
 	}
 
-	// fmt.Println("Type entry:")
-	// fmt.Println(FormatEntryInfo(typeEntry))
+  if typeEntry.Tag == dwarf.TagConstType {
+    typeEntry, err = GetTypeEntry(reader, typeEntry)
+    name = typeEntry.Val(dwarf.AttrName).(string)
+    typeEntry, err = GetTypeEntry(reader, typeEntry)
+  } else {
+    name = e.Val(dwarf.AttrName).(string)
+  }
+
+  // Arrays and Consts may still have a typedef entry behind them. We need to step
+  // through it to find the underlying struct or base type
+  if typeEntry.Tag == dwarf.TagTypedef {
+    typeEntry, err = GetTypeEntry(reader, typeEntry)
+  }
 
 	// TODO: handle the situation where we have no AttrName
 	proxy := &TypeDefProxy{
-		Name:         e.Val(dwarf.AttrName).(string),
+		Name:         name,
 		BitSize:      0,
 		StructOffset: 0,
 		ArrayRanges:  arrayRanges,
