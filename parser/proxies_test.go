@@ -217,3 +217,51 @@ func TestNewVariableProxy(t *testing.T) {
 	assert.Equal(t, int64(0x100003f50), teamProxy.Address)
 	// assert.Equal(t, teamChildren, teamProxy.Children)
 }
+
+func TestGetSetVariableProxy(t *testing.T) {
+	tp := &TypeDefProxy{
+		Name:         "type",
+		BitSize:      48,
+		StructOffset: 0,
+		ArrayRanges:  []int{},
+		Children: []TypeDefProxy{
+			{
+				Name:        "foo",
+				BitSize:     8,
+				StructOffset: 0,
+				ArrayRanges: []int{},
+				Children:    []TypeDefProxy{},
+			},
+			{
+				Name:        "bar",
+				BitSize:     32,
+				StructOffset: 8,
+				ArrayRanges: []int{},
+				Children:    []TypeDefProxy{},
+			},
+			{
+				Name:        "baz",
+				BitSize:     8,
+				StructOffset: 40,
+				ArrayRanges: []int{},
+				Children:    []TypeDefProxy{},
+			},
+		},
+	}
+  byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb, 0xcc}
+	vp := &VariableProxy{
+		Name: "variable",
+    Type: *tp,
+    Address: 0xfeedbeef,
+    value: byteLiteral,
+	}
+ 
+  val, _ := vp.Get()
+  assert.Equal(t, byteLiteral, val)
+  foo, _ := vp.GetField("foo")
+  assert.Equal(t, 0xfe, foo)
+  bar, _ := vp.GetField("bar")
+  assert.Equal(t, 0xedbeefaabb, bar)
+  baz, _ := vp.GetField("baz")
+  assert.Equal(t, 0xcc, baz)
+}
