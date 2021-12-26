@@ -86,8 +86,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		proxy.BitSize = bitSize
 	}
 
-	// fmt.Println("Parsing type entry:")
-	// fmt.Println(FormatEntryInfo(typeEntry))
+  // TODO: split this into its own method
 	if typeEntry.Children {
 		for {
 			child, err := reader.Next()
@@ -137,7 +136,7 @@ type VariableProxy struct {
 	Name     string
 	Type     TypeDefProxy
 	Address  int64
-	Value    int64
+	Value    []byte
 	Children []VariableProxy
 }
 
@@ -149,7 +148,7 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 		Name:    entry.Val(dwarf.AttrName).(string),
 		Type:    *typeDefProxy,
 		Address: ParseLocation(loc),
-		Value:   0,
+		Value:   []byte{},
 	}
 	return proxy, err
 }
@@ -158,7 +157,18 @@ func NewVariableProxyFromTypedef(typeDef TypeDefProxy) *VariableProxy {
 	proxy := &VariableProxy{
 		Type:    typeDef,
 		Address: 0,
-		Value:   0,
+		Value:   []byte{},
 	}
 	return proxy
 }
+
+// TODO: define interface for accessing this class:
+// func SetField(field, value)
+// func Set(value)
+// func GetField(field) (int64)
+// func Get() ([]bytes)
+
+// Store data internally as bytes and parse into fields on demand
+
+// Do not populate children at all; simply use Get/Set
+// to access children based on data contained in the typedef proxy
