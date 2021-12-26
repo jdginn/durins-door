@@ -1,6 +1,7 @@
 package parser
 
 import (
+  "encoding/binary"
 	"debug/dwarf"
 	"fmt"
 )
@@ -117,10 +118,10 @@ func (p *TypeDefProxy) GoString() string {
 }
 
 type VariableProxy struct {
-	Name     string
-	Type     TypeDefProxy
-	Address  int64
-	value    []byte
+	Name    string
+	Type    TypeDefProxy
+	Address uint64
+	value   []byte
 }
 
 // Construct a new VariableProxy
@@ -136,7 +137,17 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 	return proxy, err
 }
 
-// func (p *VariableProxy) navigateMembers(path string) (TypeDefProxy, error) {return nil, nil}
+// TODO: change the child hierarchy to use ordered maps not slices?
+func (p *VariableProxy) navigateMembers(path string) (TypeDefProxy, error) {
+  var err error = nil
+  typeDef := p.Type
+	for _, child := range typeDef.Children {
+		if child.Name == path {
+			return child, err
+		}
+	}
+  return typeDef, err
+}
 
 func (p *VariableProxy) string() string {
 	var str string = fmt.Sprintf("Variable %s at address %x of type:\n%v", p.Name, p.Address, p.Type.string())
@@ -159,7 +170,12 @@ func (p *VariableProxy) Get() ([]byte, error) {
 	return p.value, nil
 }
 
-func (p *VariableProxy) GetField(field string) (int64, error) { return 0, nil }
+func (p *VariableProxy) GetField(field string) (uint64, error) { 
+  fieldEntry, err := p.navigateMembers(field)
+  val := p.value[fieldEntry.StructOffset:fieldEntry.BitSize]
+  val_int := binary.BigEndian.Uint64(val)
+  return val_int, err
+}
 
 func (p *VariableProxy) Write(value []byte) error { return nil }
 
@@ -167,4 +183,4 @@ func (p *VariableProxy) WriteField(field string, value []byte) error { return ni
 
 func (p *VariableProxy) Read(value []byte) ([]byte, error) { return p.value, nil }
 
-func (p *VariableProxy) ReadField(field string, value []byte) (int64, error) { return 0, nil }
+func (p *VariableProxy) ReadField(field string, value []byte) (uint64, error) { return 0, nil }
