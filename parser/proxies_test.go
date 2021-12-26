@@ -189,7 +189,7 @@ var driverChildren = []TypeDefProxy{
 	},
 }
 assert.Equal(t, "formula_1_teams", teamsProxy.Name)
-assert.Equal(t, int(12*8), teamsProxy.Type.BitSize)
+assert.Equal(t, int(384), teamsProxy.Type.BitSize)
 assert.Equal(t, driverChildren, teamsProxy.Children)
 
 // A type that includes the type from the previous test
