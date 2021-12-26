@@ -24,10 +24,9 @@ type TypeDefProxy struct {
 
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
 	var arrayRanges = []int{0}
-  var name string
+	var name string
 	var err error = nil
 	typeEntry, err := GetTypeEntry(reader, e)
-
 
 	// Need to handle traversing through array entries to get to the underlying typedefs.
 	if typeEntry.Tag == dwarf.TagArrayType {
@@ -37,19 +36,19 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		typeEntry, _ = GetTypeEntry(reader, typeEntry)
 	}
 
-  if typeEntry.Tag == dwarf.TagConstType {
-    typeEntry, err = GetTypeEntry(reader, typeEntry)
-    name = typeEntry.Val(dwarf.AttrName).(string)
-    typeEntry, err = GetTypeEntry(reader, typeEntry)
-  } else {
-    name = e.Val(dwarf.AttrName).(string)
-  }
+	if typeEntry.Tag == dwarf.TagConstType {
+		typeEntry, err = GetTypeEntry(reader, typeEntry)
+		name = typeEntry.Val(dwarf.AttrName).(string)
+		typeEntry, err = GetTypeEntry(reader, typeEntry)
+	} else {
+		name = e.Val(dwarf.AttrName).(string)
+	}
 
-  // Arrays and Consts may still have a typedef entry behind them. We need to step
-  // through it to find the underlying struct or base type
-  if typeEntry.Tag == dwarf.TagTypedef {
-    typeEntry, err = GetTypeEntry(reader, typeEntry)
-  }
+	// Arrays and Consts may still have a typedef entry behind them. We need to step
+	// through it to find the underlying struct or base type
+	if typeEntry.Tag == dwarf.TagTypedef {
+		typeEntry, err = GetTypeEntry(reader, typeEntry)
+	}
 
 	// TODO: handle the situation where we have no AttrName
 	proxy := &TypeDefProxy{
@@ -141,25 +140,25 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 // func (p *VariableProxy) navigateMembers(path string) (TypeDefProxy, error) {return nil, nil}
 
 func (p *VariableProxy) string() string {
-  var str string = fmt.Sprintf("Variable %s at address %x of type:\n%v", p.Name, p.Address, p.Type.string())
-  return str
+	var str string = fmt.Sprintf("Variable %s at address %x of type:\n%v", p.Name, p.Address, p.Type.string())
+	return str
 }
 
 func (p *VariableProxy) GoString() string {
-  return p.string()
+	return p.string()
 }
 
 // Store data internally as bytes and parse into fields on demand
 
 func (p *VariableProxy) Set(value []byte) {
-  p.value = value
+	p.value = value
 }
 
 func (p *VariableProxy) SetField(field string, value []byte) {}
 
-func (p *VariableProxy) Get() ([]byte) {return p.value}
+func (p *VariableProxy) Get() []byte { return p.value }
 
-func (p *VariableProxy) GetField(field string) (int64) {return 0}
+func (p *VariableProxy) GetField(field string) int64 { return 0 }
 
 func (p *VariableProxy) Write(value []byte) {}
 
