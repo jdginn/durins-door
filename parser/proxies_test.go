@@ -246,6 +246,6 @@ var teamChildren = []TypeDefProxy{
 assert.Equal(t, "formula_1_teams", teamProxy.Name)
 assert.Equal(t, "Team", teamProxy.Type.Name)
 assert.Equal(t, int(384), teamProxy.Type.BitSize)
-assert.Equal(t, 0x100003f50, teamProxy.Address)
+assert.Equal(t, int64(0x100003f50), teamProxy.Address)
 assert.Equal(t, teamChildren, teamProxy.Children)
 }
