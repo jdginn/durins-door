@@ -121,7 +121,6 @@ type VariableProxy struct {
 	Type     TypeDefProxy
 	Address  int64
 	value    []byte
-	Children []VariableProxy
 }
 
 // Construct a new VariableProxy
@@ -156,14 +155,16 @@ func (p *VariableProxy) Set(value []byte) {
 
 func (p *VariableProxy) SetField(field string, value []byte) {}
 
-func (p *VariableProxy) Get() []byte { return p.value }
+func (p *VariableProxy) Get() ([]byte, error) {
+	return p.value, nil
+}
 
-func (p *VariableProxy) GetField(field string) int64 { return 0 }
+func (p *VariableProxy) GetField(field string) (int64, error) { return 0, nil }
 
-func (p *VariableProxy) Write(value []byte) {}
+func (p *VariableProxy) Write(value []byte) error { return nil }
 
-func (p *VariableProxy) WriteField(field string, value []byte) {}
+func (p *VariableProxy) WriteField(field string, value []byte) error { return nil }
 
-func (p *VariableProxy) Read(value []byte) {}
+func (p *VariableProxy) Read(value []byte) ([]byte, error) { return p.value, nil }
 
-func (p *VariableProxy) ReadField(field string, value []byte) {}
+func (p *VariableProxy) ReadField(field string, value []byte) (int64, error) { return 0, nil }
