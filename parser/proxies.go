@@ -44,16 +44,28 @@ type TypeDefProxy struct {
 }
 
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
-	typeEntry, _ := GetTypeEntry(reader, e)
+  var arrayRanges = []int{0}
+	var err error = nil
+  fmt.Println("NewTypeDefProxy")
 	fmt.Println(FormatEntryInfo(e))
+	typeEntry, _ := GetTypeEntry(reader, e)
+
+  if typeEntry.Tag == dwarf.TagArrayType{
+    arrayRanges, err = GetArrayRanges(reader, typeEntry)
+    typeEntry, err = GetTypeEntry(reader, typeEntry)
+  }
+
+  fmt.Println("Type entry:")
+	fmt.Println(FormatEntryInfo(typeEntry))
+
+  // TODO: handle the situation where we have no AttrName
 	proxy := &TypeDefProxy{
 		Name:         e.Val(dwarf.AttrName).(string),
 		BitSize:      0,
 		StructOffset: 0,
-		ArrayRanges:  []int{0},
+		ArrayRanges:  arrayRanges,
 		Children:     make([]TypeDefProxy, 0),
 	}
-	var err error = nil
 
 	// The offset into the struct is defined by the member, not its type
 	if hasAttr(e, dwarf.AttrDataMemberLoc) {
