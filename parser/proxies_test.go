@@ -6,38 +6,6 @@ import (
 	"testing"
 )
 
-func TestNewTypeEntryProxy(t *testing.T) {
-	reader, _ := GetReader(testcaseFilename)
-	var p *TypeEntryProxy
-	var e *dwarf.Entry
-	var err error
-
-	e, _ = GetEntry(reader, "Driver")
-	p, err = NewTypeEntryProxy(reader, e)
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "Driver", p.Name)
-	assert.Equal(t, int(12*8), p.BitSize)
-
-	e, _ = GetEntry(reader, "char")
-	p, err = NewTypeEntryProxy(reader, e)
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "char", p.Name)
-	assert.Equal(t, int(8), p.BitSize)
-
-	// Make sure we can get the same proxy twice
-	e, _ = GetEntry(reader, "Driver")
-	p, err = NewTypeEntryProxy(reader, e)
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "Driver", p.Name)
-	assert.Equal(t, int(12*8), p.BitSize)
-
-	e, _ = GetEntry(reader, "char")
-	p, err = NewTypeEntryProxy(reader, e)
-	assert.Equal(t, nil, err)
-	assert.Equal(t, "char", p.Name)
-	assert.Equal(t, int(8), p.BitSize)
-}
-
 func TestNewTypeDefProxy(t *testing.T) {
 	reader, _ := GetReader(testcaseFilename)
 	// var driverProxy *TypeDefProxy
