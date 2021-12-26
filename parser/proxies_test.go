@@ -248,7 +248,7 @@ func TestGetSetVariableProxy(t *testing.T) {
 			},
 		},
 	}
-  byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb, 0xcc}
+  byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb}
 	vp := &VariableProxy{
 		Name: "variable",
     Type: *tp,
@@ -259,9 +259,11 @@ func TestGetSetVariableProxy(t *testing.T) {
   val, _ := vp.Get()
   assert.Equal(t, byteLiteral, val)
   foo, _ := vp.GetField("foo")
-  assert.Equal(t, 0xfe, foo)
+  assert.Equal(t, uint64(0xfe), foo)
   bar, _ := vp.GetField("bar")
-  assert.Equal(t, 0xedbeefaabb, bar)
+  assert.Equal(t, uint64(0xedbeefaa), bar)
   baz, _ := vp.GetField("baz")
-  assert.Equal(t, 0xcc, baz)
+  assert.Equal(t, uint64(0xbb), baz)
+
+  // TODO: check range for sets
 }

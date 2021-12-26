@@ -1,7 +1,6 @@
 package parser
 
 import (
-  "encoding/binary"
 	"debug/dwarf"
 	"fmt"
 )
@@ -172,9 +171,21 @@ func (p *VariableProxy) Get() ([]byte, error) {
 
 func (p *VariableProxy) GetField(field string) (uint64, error) { 
   fieldEntry, err := p.navigateMembers(field)
-  val := p.value[fieldEntry.StructOffset:fieldEntry.BitSize]
-  val_int := binary.BigEndian.Uint64(val)
-  return val_int, err
+  // TODO: what if the variable is not byte-aligned? Will need to extract from
+  // uint64s at that point.
+  // size := fieldEntry.BitSize
+  // fmt.Printf("StructOffset: %v\n", fieldEntry.StructOffset)
+  // fmt.Printf("BitSize: %v\n", fieldEntry.BitSize)
+  val := p.value[(fieldEntry.StructOffset / 8) : (fieldEntry.StructOffset / 8) + (fieldEntry.BitSize / 8)]
+  // fmt.Printf("val as bytes: %v\n", val)
+  var valInt uint64 = 0
+  n := len(val) - 1
+  // fmt.Printf("Pad: %v\n", n)
+  for i, b := range val{
+    shiftAmt := (n - i) * 8
+    valInt = valInt + uint64(b)<<shiftAmt
+  }
+  return valInt, err
 }
 
 func (p *VariableProxy) Write(value []byte) error { return nil }
