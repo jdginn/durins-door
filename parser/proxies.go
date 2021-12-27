@@ -168,7 +168,19 @@ func (p *VariableProxy) Set(value []byte) (error) {
   return err
 }
 
-func (p *VariableProxy) SetField(field string, value []byte) {}
+func (p *VariableProxy) SetField(field string, value uint64) (error) {
+  // TODO: what if the field is not byte-aligned?
+  fieldEntry, err := p.navigateMembers(field)
+  startIndex := fieldEntry.StructOffset / 8
+  n := fieldEntry.BitSize / 8
+  if fieldEntry.BitSize % 8 != 0 {
+    n += 1
+  }
+  for i := 0; i < n; i++ {
+    p.value[startIndex + i] = byte(value >> ((n - i - 1) * 8) & 0xff)
+  }
+  return err
+}
 
 func (p *VariableProxy) Get() ([]byte, error) {
 	return p.value, nil
@@ -176,7 +188,7 @@ func (p *VariableProxy) Get() ([]byte, error) {
 
 func (p *VariableProxy) GetField(field string) (uint64, error) { 
   fieldEntry, err := p.navigateMembers(field)
-  // TODO: what if the variable is not byte-aligned? Will need to extract from
+  // TODO: what if the field is not byte-aligned? Will need to extract from
   // uint64s at that point.
   // size := fieldEntry.BitSize
   // fmt.Printf("StructOffset: %v\n", fieldEntry.StructOffset)
