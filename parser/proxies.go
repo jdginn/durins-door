@@ -88,7 +88,6 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 				break
 			}
 			if child.Tag == 0 {
-				fmt.Println("Bailing from populating children because we found a null entry")
 				break
 			}
 
@@ -136,7 +135,7 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 	return proxy, err
 }
 
-// TODO: change the child hierarchy to use ordered maps not slices?
+// TODO: change the child hierarchy to use ordered maps not slices for lookup speed?
 func (p *VariableProxy) navigateMembers(path string) (TypeDefProxy, error) {
   var err error = nil
   typeDef := p.Type
@@ -173,6 +172,7 @@ func (p *VariableProxy) SetField(field string, value uint64) (error) {
   fieldEntry, err := p.navigateMembers(field)
   startIndex := fieldEntry.StructOffset / 8
   n := fieldEntry.BitSize / 8
+  // TODO: surely there is a mroe elegant way
   if fieldEntry.BitSize % 8 != 0 {
     n += 1
   }
@@ -188,16 +188,12 @@ func (p *VariableProxy) Get() ([]byte, error) {
 
 func (p *VariableProxy) GetField(field string) (uint64, error) { 
   fieldEntry, err := p.navigateMembers(field)
-  // TODO: what if the field is not byte-aligned? Will need to extract from
-  // uint64s at that point.
-  // size := fieldEntry.BitSize
-  // fmt.Printf("StructOffset: %v\n", fieldEntry.StructOffset)
-  // fmt.Printf("BitSize: %v\n", fieldEntry.BitSize)
+  // TODO: what if the field is not byte-aligned?
+
+  // TODO: don't build this slice, just index into it like SetField
   val := p.value[(fieldEntry.StructOffset / 8) : (fieldEntry.StructOffset / 8) + (fieldEntry.BitSize / 8)]
-  // fmt.Printf("val as bytes: %v\n", val)
   var valInt uint64 = 0
   n := len(val) - 1
-  // fmt.Printf("Pad: %v\n", n)
   for i, b := range val{
     shiftAmt := (n - i) * 8
     valInt = valInt + uint64(b)<<shiftAmt
