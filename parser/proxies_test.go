@@ -226,77 +226,77 @@ func TestGetSetVariableProxy(t *testing.T) {
 		ArrayRanges:  []int{},
 		Children: []TypeDefProxy{
 			{
-				Name:        "foo",
-				BitSize:     8,
+				Name:         "foo",
+				BitSize:      8,
 				StructOffset: 0,
-				ArrayRanges: []int{},
-				Children:    []TypeDefProxy{},
+				ArrayRanges:  []int{},
+				Children:     []TypeDefProxy{},
 			},
 			{
-				Name:        "bar",
-				BitSize:     32,
+				Name:         "bar",
+				BitSize:      32,
 				StructOffset: 8,
-				ArrayRanges: []int{},
-				Children:    []TypeDefProxy{},
+				ArrayRanges:  []int{},
+				Children:     []TypeDefProxy{},
 			},
 			{
-				Name:        "baz",
-				BitSize:     8,
+				Name:         "baz",
+				BitSize:      8,
 				StructOffset: 40,
-				ArrayRanges: []int{},
-				Children:    []TypeDefProxy{},
+				ArrayRanges:  []int{},
+				Children:     []TypeDefProxy{},
 			},
 		},
 	}
-  byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb}
+	byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb}
 	vp := &VariableProxy{
-		Name: "variable",
-    Type: *tp,
-    Address: 0xfeedbeef,
-    value: byteLiteral,
+		Name:    "variable",
+		Type:    *tp,
+		Address: 0xfeedbeef,
+		value:   byteLiteral,
 	}
- 
-  val, err := vp.Get()
-  assert.Equal(t, byteLiteral, val)
-  foo, err := vp.GetField("foo")
-  assert.Equal(t, uint64(0xfe), foo)
-  bar, err := vp.GetField("bar")
-  assert.Equal(t, uint64(0xedbeefaa), bar)
-  baz, err := vp.GetField("baz")
-  assert.Equal(t, uint64(0xbb), baz)
-  assert.Nil(t, err)
 
-  // Should fail because this data cannot fit in this variable's type
-  err = vp.Set([]byte{0x22, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77})
-  assert.NotNil(t, err)
+	val, err := vp.Get()
+	assert.Equal(t, byteLiteral, val)
+	foo, err := vp.GetField("foo")
+	assert.Equal(t, uint64(0xfe), foo)
+	bar, err := vp.GetField("bar")
+	assert.Equal(t, uint64(0xedbeefaa), bar)
+	baz, err := vp.GetField("baz")
+	assert.Equal(t, uint64(0xbb), baz)
+	assert.Nil(t, err)
 
-  err = vp.Set([]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66})
+	// Should fail because this data cannot fit in this variable's type
+	err = vp.Set([]byte{0x22, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77})
+	assert.NotNil(t, err)
 
-  assert.Nil(t, err)
-  foo, err = vp.GetField("foo")
-  assert.Equal(t, uint64(0x11), foo)
-  bar, err = vp.GetField("bar")
-  assert.Equal(t, uint64(0x22334455), bar)
-  baz, err = vp.GetField("baz")
-  assert.Equal(t, uint64(0x66), baz)
-  assert.Nil(t, err)
+	err = vp.Set([]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66})
 
-  err = vp.SetField("foo", uint64(0xff))
-  err = vp.SetField("bar", uint64(0x00c0ffee))
-  err = vp.SetField("baz", uint64(0x00))
-  assert.Nil(t, err)
+	assert.Nil(t, err)
+	foo, err = vp.GetField("foo")
+	assert.Equal(t, uint64(0x11), foo)
+	bar, err = vp.GetField("bar")
+	assert.Equal(t, uint64(0x22334455), bar)
+	baz, err = vp.GetField("baz")
+	assert.Equal(t, uint64(0x66), baz)
+	assert.Nil(t, err)
 
-  val, err = vp.Get()
-  assert.Equal(t, []byte{0xff, 0x00, 0xc0, 0xff, 0xee, 0x00}, val)
+	err = vp.SetField("foo", uint64(0xff))
+	err = vp.SetField("bar", uint64(0x00c0ffee))
+	err = vp.SetField("baz", uint64(0x00))
+	assert.Nil(t, err)
 
-  foo, err = vp.GetField("foo")
-  assert.Equal(t, uint64(0xff), foo)
-  bar, err = vp.GetField("bar")
-  assert.Equal(t, uint64(0xc0ffee), bar)
-  baz, err = vp.GetField("baz")
-  assert.Equal(t, uint64(0x00), baz)
-  assert.Nil(t, err)
+	val, err = vp.Get()
+	assert.Equal(t, []byte{0xff, 0x00, 0xc0, 0xff, 0xee, 0x00}, val)
 
-  // TODO: test range checking on SetField
+	foo, err = vp.GetField("foo")
+	assert.Equal(t, uint64(0xff), foo)
+	bar, err = vp.GetField("bar")
+	assert.Equal(t, uint64(0xc0ffee), bar)
+	baz, err = vp.GetField("baz")
+	assert.Equal(t, uint64(0x00), baz)
+	assert.Nil(t, err)
+
+	// TODO: test range checking on SetField
 
 }

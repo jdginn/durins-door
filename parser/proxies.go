@@ -137,14 +137,14 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 
 // TODO: change the child hierarchy to use ordered maps not slices for lookup speed?
 func (p *VariableProxy) navigateMembers(path string) (TypeDefProxy, error) {
-  var err error = nil
-  typeDef := p.Type
+	var err error = nil
+	typeDef := p.Type
 	for _, child := range typeDef.Children {
 		if child.Name == path {
 			return child, err
 		}
 	}
-  return typeDef, err
+	return typeDef, err
 }
 
 func (p *VariableProxy) string() string {
@@ -158,47 +158,47 @@ func (p *VariableProxy) GoString() string {
 
 // Store data internally as bytes and parse into fields on demand
 
-func (p *VariableProxy) Set(value []byte) (error) {
-  var err error = nil
-  if len(value) * 8 > p.Type.BitSize {
-    err = fmt.Errorf("Attempted to set value size %d bits, larger than type with size %d bits", len(value) * 8, p.Type.BitSize)
-  }
+func (p *VariableProxy) Set(value []byte) error {
+	var err error = nil
+	if len(value)*8 > p.Type.BitSize {
+		err = fmt.Errorf("Attempted to set value size %d bits, larger than type with size %d bits", len(value)*8, p.Type.BitSize)
+	}
 	p.value = value
-  return err
+	return err
 }
 
-func (p *VariableProxy) SetField(field string, value uint64) (error) {
-  // TODO: what if the field is not byte-aligned?
-  fieldEntry, err := p.navigateMembers(field)
-  startIndex := fieldEntry.StructOffset / 8
-  n := fieldEntry.BitSize / 8
-  // TODO: surely there is a mroe elegant way
-  if fieldEntry.BitSize % 8 != 0 {
-    n += 1
-  }
-  for i := 0; i < n; i++ {
-    p.value[startIndex + i] = byte(value >> ((n - i - 1) * 8) & 0xff)
-  }
-  return err
+func (p *VariableProxy) SetField(field string, value uint64) error {
+	// TODO: what if the field is not byte-aligned?
+	fieldEntry, err := p.navigateMembers(field)
+	startIndex := fieldEntry.StructOffset / 8
+	n := fieldEntry.BitSize / 8
+	// TODO: surely there is a mroe elegant way
+	if fieldEntry.BitSize%8 != 0 {
+		n += 1
+	}
+	for i := 0; i < n; i++ {
+		p.value[startIndex+i] = byte(value >> ((n - i - 1) * 8) & 0xff)
+	}
+	return err
 }
 
 func (p *VariableProxy) Get() ([]byte, error) {
 	return p.value, nil
 }
 
-func (p *VariableProxy) GetField(field string) (uint64, error) { 
-  fieldEntry, err := p.navigateMembers(field)
-  // TODO: what if the field is not byte-aligned?
+func (p *VariableProxy) GetField(field string) (uint64, error) {
+	fieldEntry, err := p.navigateMembers(field)
+	// TODO: what if the field is not byte-aligned?
 
-  // TODO: don't build this slice, just index into it like SetField
-  val := p.value[(fieldEntry.StructOffset / 8) : (fieldEntry.StructOffset / 8) + (fieldEntry.BitSize / 8)]
-  var valInt uint64 = 0
-  n := len(val) - 1
-  for i, b := range val{
-    shiftAmt := (n - i) * 8
-    valInt = valInt + uint64(b)<<shiftAmt
-  }
-  return valInt, err
+	// TODO: don't build this slice, just index into it like SetField
+	val := p.value[(fieldEntry.StructOffset / 8) : (fieldEntry.StructOffset/8)+(fieldEntry.BitSize/8)]
+	var valInt uint64 = 0
+	n := len(val) - 1
+	for i, b := range val {
+		shiftAmt := (n - i) * 8
+		valInt = valInt + uint64(b)<<shiftAmt
+	}
+	return valInt, err
 }
 
 func (p *VariableProxy) Write(value []byte) error { return nil }
