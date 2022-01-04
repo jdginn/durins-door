@@ -11,7 +11,7 @@ import (
 // is to simply compile a testcase. I am using this: https://github.com/jdginn/testcase-compiler
 
 // The downside here is that these tests are hostage to changes in that testcase.
-var testcaseFilename = "../../testcase-compiler/main.out.dSYM/Contents/Resources/DWARF/main.out"
+var testcaseFilename = "../testcase-compiler/main.out.dSYM/Contents/Resources/DWARF/main.out"
 
 func TestGetReader(t *testing.T) {
 	// For now, just assume testcase is always located in the right place
