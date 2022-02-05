@@ -5,12 +5,12 @@ import (
 	"fmt"
 )
 
-// Outward-facing representation of a typedef representing what a user
+// A TypedefProxy is an outward-facing representation of a typedef representing what a user
 // may care about without any DWARF implementation information. This proxy
-// represents the key information required to understand the layout of a particular type
-// type and then read or create variables of this type idiomatically from within a target
-// language (most immediately relevant is Go but this should be generic enough to apply
-// to other languages through Go bindings).
+// represents the key information required to understand the layout of a particular type 
+// and then read or create variables of this type idiomatically from within a target
+// language (most immediately relevant is Go but this should be generic enough to
+// apply to other languages through Go bindings or a socket server using json or rpc).
 //
 // All relevant DWARF parsing is handled when this proxy is created and no intermediate
 // DWARF data is included here. The proxy should be ready to hand off as-is to a user.
@@ -22,6 +22,7 @@ type TypeDefProxy struct {
 	Children     []TypeDefProxy
 }
 
+// Construct a new TypeDefProxy
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
 	var arrayRanges = []int{0}
 	var name string
@@ -115,6 +116,18 @@ func (p *TypeDefProxy) GoString() string {
 	return p.string()
 }
 
+// Represents a variable and facilitates interacting with that
+// variable. For our purposes, a variable is an object of known Type
+// located at a known address, whose value we can find by reading
+// a known size from that address. Alternatively, we can set the value
+// of this variables, or its members if it is a struct, and then write
+// those values back to memory.
+//
+// Data is stored internally as bytes and parse into fields on demand.
+//
+// Writing data to memory is handled elsewhere; this proxy instructs
+// a client which addresses to read and provides a writeable stream
+// of bytes to allow the client to write the variable back to memory. 
 type VariableProxy struct {
 	Name    string
 	Type    TypeDefProxy
@@ -122,7 +135,10 @@ type VariableProxy struct {
 	value   []byte
 }
 
-// Construct a new VariableProxy
+// Construct a new VariableProxy for a variable known to the DWARF
+// debug info.
+//
+// To create a variable from scratch , use *some other method*
 func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy, error) {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
 	loc, err := GetLocation(entry)
@@ -156,8 +172,12 @@ func (p *VariableProxy) GoString() string {
 	return p.string()
 }
 
-// Store data internally as bytes and parse into fields on demand
-
+// Set the value of this entire variable
+//
+// In the case of a multi-field struct, this is most useful for
+// initializing our proxy of a variable by having the client read
+// the entire variable out of memory. Once the proxy is poplulated,
+// we can access fields as required.
 func (p *VariableProxy) Set(value []byte) error {
 	var err error = nil
 	if len(value)*8 > p.Type.BitSize {
@@ -167,6 +187,10 @@ func (p *VariableProxy) Set(value []byte) error {
 	return err
 }
 
+// Set the value of a single field within this variable
+// Typically this will be used for a struct or class
+//
+// NOTE: at present, fields must be byte-aligned
 func (p *VariableProxy) SetField(field string, value uint64) error {
 	// TODO: what if the field is not byte-aligned?
 	fieldEntry, err := p.navigateMembers(field)
@@ -182,10 +206,18 @@ func (p *VariableProxy) SetField(field string, value uint64) error {
 	return err
 }
 
+// Return the value of the entire variable
+//
+// In the case of a multi-field struct, this is most useful to
+// enable the client to write the entire variable back to memory.
 func (p *VariableProxy) Get() ([]byte, error) {
 	return p.value, nil
 }
 
+// Return the value of a single field within this variable
+// Typically this will be used for a struct or class
+//
+// NOTE: at present, fields must be byte-aligned
 func (p *VariableProxy) GetField(field string) (uint64, error) {
 	fieldEntry, err := p.navigateMembers(field)
 	// TODO: what if the field is not byte-aligned?
@@ -201,6 +233,8 @@ func (p *VariableProxy) GetField(field string) (uint64, error) {
 	return valInt, err
 }
 
+// TODO: should proxies even have read/write methods? It seems this
+// should be handled on the client end
 func (p *VariableProxy) Write(value []byte) error { return nil }
 
 func (p *VariableProxy) WriteField(field string, value []byte) error { return nil }
