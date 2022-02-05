@@ -117,105 +117,86 @@ func TestNewVariableProxy(t *testing.T) {
 	var e *dwarf.Entry
 	var err error
 
-	// // Start with a few trivial cases
-	// e, err = GetEntry(reader, "char")
-	//  assert.Equal(t, nil, err)
-	//  teamsProxy, err := NewTypeDefProxy(reader, e)
-	//  assert.Equal(t, nil, err)
-	// assert.Equal(t, "char", teamsProxy.Name)
-	// assert.Equal(t, int(8), teamsProxy.BitSize)
-	// assert.Equal(t, make([]TypeDefProxy, 0), teamsProxy.Children)
 
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, err = GetEntry(reader, "formula_1_teams")
 	assert.Equal(t, nil, err)
 	teamsProxy, err = NewVariableProxy(reader, e)
 	assert.Equal(t, nil, err)
-	// NOTE: clang chooses to pad bools out to 4 bytes despite the typical implementation
-	// being only 1 byte
-	// var driverChildren = []TypeDefProxy{
-	// 	{
-	// 		Name:         "initials",
-	// 		BitSize:      8,
-	// 		StructOffset: 0,
-	// 		ArrayRanges:  []int{2},
-	// 		Children:     make([]TypeDefProxy, 0),
-	// 	},
-	// 	{
-	// 		Name:         "car_number",
-	// 		BitSize:      32,
-	// 		StructOffset: 32,
-	// 		ArrayRanges:  []int{0},
-	// 		Children:     make([]TypeDefProxy, 0),
-	// 	},
-	// 	{
-	// 		Name:         "has_won_wdc",
-	// 		BitSize:      8,
-	// 		StructOffset: 64,
-	// 		ArrayRanges:  []int{0},
-	// 		Children:     make([]TypeDefProxy, 0),
-	// 	},
-	// }
+  // First we confirm that this variable includes the same type we found in
+  // TestNewTypeDefProxy 
+	var driverChildren = []TypeDefProxy{
+		{
+			Name:         "initials",
+			BitSize:      8,
+			StructOffset: 0,
+			ArrayRanges:  []int{2},
+			Children:     make([]TypeDefProxy, 0),
+		},
+		{
+			Name:         "car_number",
+			BitSize:      32,
+			StructOffset: 32,
+			ArrayRanges:  []int{0},
+			Children:     make([]TypeDefProxy, 0),
+		},
+		{
+			Name:         "has_won_wdc",
+			BitSize:      8,
+			StructOffset: 64,
+			ArrayRanges:  []int{0},
+			Children:     make([]TypeDefProxy, 0),
+		},
+	}
+	var teamChildren = []TypeDefProxy{
+		{
+			Name:         "drivers",
+			BitSize:      96,
+			StructOffset: 0,
+			ArrayRanges:  []int{2},
+			Children:     driverChildren,
+		},
+		{
+			Name:         "sponsors",
+			BitSize:      16,
+			StructOffset: 192,
+			ArrayRanges:  []int{4},
+			Children:     make([]TypeDefProxy, 0),
+		},
+		{
+			Name:         "has_won_wdc",
+			BitSize:      8,
+			StructOffset: 256,
+			ArrayRanges:  []int{0},
+			Children:     make([]TypeDefProxy, 0),
+		},
+		{
+			Name:         "last_wdc",
+			BitSize:      32,
+			StructOffset: 288,
+			ArrayRanges:  []int{0},
+			Children:     make([]TypeDefProxy, 0),
+		},
+		{
+			Name:         "has_won_wcc",
+			BitSize:      8,
+			StructOffset: 320,
+			ArrayRanges:  []int{0},
+			Children:     make([]TypeDefProxy, 0),
+		},
+		{
+			Name:         "last_wcc",
+			BitSize:      32,
+			StructOffset: 352,
+			ArrayRanges:  []int{0},
+			Children:     make([]TypeDefProxy, 0),
+		},
+	}
 	assert.Equal(t, "formula_1_teams", teamsProxy.Name)
+	assert.Equal(t, "Team", teamsProxy.Type.Name)
 	assert.Equal(t, int(384), teamsProxy.Type.BitSize)
-	// assert.Equal(t, driverChildren, teamsProxy.Children)
-
-	// A type that includes the type from the previous test
-	e, err = GetEntry(reader, "formula_1_teams")
-	assert.Equal(t, nil, err)
-	teamProxy, err := NewVariableProxy(reader, e)
-	assert.Equal(t, nil, err)
-
-	// var teamChildren = []TypeDefProxy{
-	// 	{
-	// 		Name:         "drivers",
-	// 		BitSize:      96,
-	// 		StructOffset: 0,
-	// 		ArrayRanges:  []int{2},
-	// 		Children:     driverChildren,
-	// 	},
-	// 	{
-	// 		Name:         "sponsors",
-	// 		BitSize:      16,
-	// 		StructOffset: 192,
-	// 		ArrayRanges:  []int{4},
-	// 		Children:     make([]TypeDefProxy, 0),
-	// 	},
-	// 	{
-	// 		Name:         "has_won_wdc",
-	// 		BitSize:      8,
-	// 		StructOffset: 256,
-	// 		ArrayRanges:  []int{0},
-	// 		Children:     make([]TypeDefProxy, 0),
-	// 	},
-	// 	{
-	// 		Name:         "last_wdc",
-	// 		BitSize:      32,
-	// 		StructOffset: 288,
-	// 		ArrayRanges:  []int{0},
-	// 		Children:     make([]TypeDefProxy, 0),
-	// 	},
-	// 	{
-	// 		Name:         "has_won_wcc",
-	// 		BitSize:      8,
-	// 		StructOffset: 320,
-	// 		ArrayRanges:  []int{0},
-	// 		Children:     make([]TypeDefProxy, 0),
-	// 	},
-	// 	{
-	// 		Name:         "last_wcc",
-	// 		BitSize:      32,
-	// 		StructOffset: 352,
-	// 		ArrayRanges:  []int{0},
-	// 		Children:     make([]TypeDefProxy, 0),
-	// 	},
-	// }
-
-	assert.Equal(t, "formula_1_teams", teamProxy.Name)
-	assert.Equal(t, "Team", teamProxy.Type.Name)
-	assert.Equal(t, int(384), teamProxy.Type.BitSize)
-	assert.Equal(t, uint64(0x100003f50), teamProxy.Address)
-	// assert.Equal(t, teamChildren, teamProxy.Children)
+	assert.Equal(t, teamChildren, teamsProxy.Type.Children)
+	assert.Equal(t, uint64(0x100003f50), teamsProxy.Address)
 }
 
 func TestGetSetVariableProxy(t *testing.T) {
@@ -268,7 +249,7 @@ func TestGetSetVariableProxy(t *testing.T) {
 
 	// Should fail because this data cannot fit in this variable's type
 	err = vp.Set([]byte{0x22, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77})
-	assert.NotNil(t, err)
+  assert.Error(t, err)
 
 	err = vp.Set([]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66})
 
