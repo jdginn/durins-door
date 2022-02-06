@@ -111,6 +111,39 @@ func TestNewTypeDefProxy(t *testing.T) {
 	assert.Equal(t, teamChildren, teamProxy.Children)
 }
 
+func TestTypeDefProxyGetChild(t *testing.T) {
+	reader, _ := GetReader(testcaseFilename)
+
+  // Navigate one level down
+  e, err := GetEntry(reader, "Driver")
+	assert.Nil(t, err)
+  driverProxy, err := NewTypeDefProxy(reader, e)
+	assert.Nil(t, err)
+  initialsProxy, err := driverProxy.GetChild("initials")
+	assert.Nil(t, err)
+	assert.Equal(t, "initials", initialsProxy.Name)
+	assert.Equal(t, int(8), initialsProxy.BitSize)
+	assert.Equal(t, int(0), initialsProxy.StructOffset)
+	assert.Equal(t, []int{2}, initialsProxy.ArrayRanges)
+
+  // Navigate two levels down
+  e, err = GetEntry(reader, "Team")
+	teamProxy, err := NewTypeDefProxy(reader, e)
+	assert.Nil(t, err)
+  driverProxy, err = teamProxy.GetChild("drivers")
+	assert.Nil(t, err)
+	assert.Equal(t, "drivers", driverProxy.Name)
+	assert.Equal(t, int(12*8), driverProxy.BitSize)
+	assert.Equal(t, int(0), driverProxy.StructOffset)
+	assert.Equal(t, []int{2}, driverProxy.ArrayRanges)
+  initialsProxy, err = driverProxy.GetChild("initials")
+	assert.Nil(t, err)
+	assert.Equal(t, "initials", initialsProxy.Name)
+	assert.Equal(t, int(8), initialsProxy.BitSize)
+	assert.Equal(t, int(0), initialsProxy.StructOffset)
+	assert.Equal(t, []int{2}, initialsProxy.ArrayRanges)
+}
+
 func TestNewVariableProxy(t *testing.T) {
 	reader, _ := GetReader(testcaseFilename)
 	var teamsProxy *VariableProxy
@@ -277,7 +310,6 @@ func TestGetSetVariableProxy(t *testing.T) {
 	baz, err = vp.GetField("baz")
 	assert.Equal(t, uint64(0x00), baz)
 	assert.Nil(t, err)
-
-	// TODO: test range checking on SetField
-
 }
+
+
