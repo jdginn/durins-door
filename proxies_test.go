@@ -114,29 +114,29 @@ func TestNewTypeDefProxy(t *testing.T) {
 func TestTypeDefProxyGetChild(t *testing.T) {
 	reader, _ := GetReader(testcaseFilename)
 
-  // Navigate one level down
-  e, err := GetEntry(reader, "Driver")
+	// Navigate one level down
+	e, err := GetEntry(reader, "Driver")
 	assert.Nil(t, err)
-  driverProxy, err := NewTypeDefProxy(reader, e)
+	driverProxy, err := NewTypeDefProxy(reader, e)
 	assert.Nil(t, err)
-  initialsProxy, err := driverProxy.GetChild("initials")
+	initialsProxy, err := driverProxy.GetChild("initials")
 	assert.Nil(t, err)
 	assert.Equal(t, "initials", initialsProxy.Name)
 	assert.Equal(t, int(8), initialsProxy.BitSize)
 	assert.Equal(t, int(0), initialsProxy.StructOffset)
 	assert.Equal(t, []int{2}, initialsProxy.ArrayRanges)
 
-  // Navigate two levels down
-  e, err = GetEntry(reader, "Team")
+	// Navigate two levels down
+	e, err = GetEntry(reader, "Team")
 	teamProxy, err := NewTypeDefProxy(reader, e)
 	assert.Nil(t, err)
-  driverProxy, err = teamProxy.GetChild("drivers")
+	driverProxy, err = teamProxy.GetChild("drivers")
 	assert.Nil(t, err)
 	assert.Equal(t, "drivers", driverProxy.Name)
 	assert.Equal(t, int(12*8), driverProxy.BitSize)
 	assert.Equal(t, int(0), driverProxy.StructOffset)
 	assert.Equal(t, []int{2}, driverProxy.ArrayRanges)
-  initialsProxy, err = driverProxy.GetChild("initials")
+	initialsProxy, err = driverProxy.GetChild("initials")
 	assert.Nil(t, err)
 	assert.Equal(t, "initials", initialsProxy.Name)
 	assert.Equal(t, int(8), initialsProxy.BitSize)
@@ -150,14 +150,13 @@ func TestNewVariableProxy(t *testing.T) {
 	var e *dwarf.Entry
 	var err error
 
-
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, err = GetEntry(reader, "formula_1_teams")
 	assert.Equal(t, nil, err)
 	teamsProxy, err = NewVariableProxy(reader, e)
 	assert.Equal(t, nil, err)
-  // First we confirm that this variable includes the same type we found in
-  // TestNewTypeDefProxy 
+	// First we confirm that this variable includes the same type we found in
+	// TestNewTypeDefProxy
 	var driverChildren = []TypeDefProxy{
 		{
 			Name:         "initials",
@@ -282,7 +281,7 @@ func TestGetSetVariableProxy(t *testing.T) {
 
 	// Should fail because this data cannot fit in this variable's type
 	err = vp.Set([]byte{0x22, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77})
-  assert.Error(t, err)
+	assert.Error(t, err)
 
 	err = vp.Set([]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66})
 
@@ -311,5 +310,3 @@ func TestGetSetVariableProxy(t *testing.T) {
 	assert.Equal(t, uint64(0x00), baz)
 	assert.Nil(t, err)
 }
-
-
