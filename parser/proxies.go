@@ -243,13 +243,13 @@ func (p *VariableProxy) GetField(field string) (int, error) {
 }
 
 type AccessMetadata struct {
-  address int
-  size int
+	Address int
+	Size    int
 }
 
-func (p *VariableProxy) GetAccessMetatdata() *AccessMetadata {
-   &AccessMetadata{
-    address: p.Address,
-    size: p.BitSize,
-  }
+func (p *VariableProxy) GetAccessMetadata() AccessMetadata {
+	return AccessMetadata{
+		Address: p.Address,
+		Size:    p.Type.BitSize,
+	}
 }
