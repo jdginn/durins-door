@@ -7,7 +7,7 @@ import (
 
 // A TypedefProxy is an outward-facing representation of a typedef representing what a user
 // may care about without any DWARF implementation information. This proxy
-// represents the key information required to understand the layout of a particular type 
+// represents the key information required to understand the layout of a particular type
 // and then read or create variables of this type idiomatically from within a target
 // language (most immediately relevant is Go but this should be generic enough to
 // apply to other languages through Go bindings or a socket server using json or rpc).
@@ -117,12 +117,12 @@ func (p *TypeDefProxy) GoString() string {
 }
 
 func (p *TypeDefProxy) GetChild(childName string) (*TypeDefProxy, error) {
-  for _, c := range p.Children {
-    if c.Name == childName {
-      return &c, nil
-    }
-  }
-  return nil, fmt.Errorf("Could not find child %s for %s", childName, p.GoString())
+	for _, c := range p.Children {
+		if c.Name == childName {
+			return &c, nil
+		}
+	}
+	return nil, fmt.Errorf("Could not find child %s for %s", childName, p.GoString())
 }
 
 // Represents a variable and facilitates interacting with that
@@ -136,7 +136,7 @@ func (p *TypeDefProxy) GetChild(childName string) (*TypeDefProxy, error) {
 //
 // Writing data to memory is handled elsewhere; this proxy instructs
 // a client which addresses to read and provides a writeable stream
-// of bytes to allow the client to write the variable back to memory. 
+// of bytes to allow the client to write the variable back to memory.
 type VariableProxy struct {
 	Name    string
 	Type    TypeDefProxy
@@ -169,7 +169,7 @@ func (p *VariableProxy) GetChild(childName string) (*TypeDefProxy, error) {
 			return &child, err
 		}
 	}
-  return nil, fmt.Errorf("Could not find child %s for %s", childName, p.GoString())
+	return nil, fmt.Errorf("Could not find child %s for %s", childName, p.GoString())
 }
 
 func (p *VariableProxy) string() string {
