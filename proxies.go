@@ -116,6 +116,15 @@ func (p *TypeDefProxy) GoString() string {
 	return p.string()
 }
 
+func (p *TypeDefProxy) GetChild(childName string) (*TypeDefProxy, error) {
+  for _, c := range p.Children {
+    if c.Name == childName {
+      return &c, nil
+    }
+  }
+  return nil, fmt.Errorf("Could not find child %s for %s", childName, p.GoString())
+}
+
 // Represents a variable and facilitates interacting with that
 // variable. For our purposes, a variable is an object of known Type
 // located at a known address, whose value we can find by reading
