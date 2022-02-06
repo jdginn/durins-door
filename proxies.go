@@ -161,15 +161,15 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 }
 
 // TODO: change the child hierarchy to use ordered maps not slices for lookup speed?
-func (p *VariableProxy) navigateMembers(path string) (TypeDefProxy, error) {
+func (p *VariableProxy) GetChild(childName string) (*TypeDefProxy, error) {
 	var err error = nil
 	typeDef := p.Type
 	for _, child := range typeDef.Children {
-		if child.Name == path {
-			return child, err
+		if child.Name == childName {
+			return &child, err
 		}
 	}
-	return typeDef, err
+  return nil, fmt.Errorf("Could not find child %s for %s", childName, p.GoString())
 }
 
 func (p *VariableProxy) string() string {
@@ -202,7 +202,7 @@ func (p *VariableProxy) Set(value []byte) error {
 // NOTE: at present, fields must be byte-aligned
 func (p *VariableProxy) SetField(field string, value uint64) error {
 	// TODO: what if the field is not byte-aligned?
-	fieldEntry, err := p.navigateMembers(field)
+	fieldEntry, err := p.GetChild(field)
 	startIndex := fieldEntry.StructOffset / 8
 	n := fieldEntry.BitSize / 8
 	// TODO: surely there is a mroe elegant way
@@ -228,7 +228,7 @@ func (p *VariableProxy) Get() ([]byte, error) {
 //
 // NOTE: at present, fields must be byte-aligned
 func (p *VariableProxy) GetField(field string) (uint64, error) {
-	fieldEntry, err := p.navigateMembers(field)
+	fieldEntry, err := p.GetChild(field)
 	// TODO: what if the field is not byte-aligned?
 
 	// TODO: don't build this slice, just index into it like SetField
