@@ -1,8 +1,6 @@
 package file
 
 import (
-  // TODO: don't use debug/dwarf here?
-  "debug/dwarf"
   "os"
 	"fmt"
   
@@ -25,13 +23,18 @@ type ProxyWrapper struct {
 // of this package)
 //
 // Keep in mind, the next step here is building a server
-func NewVariableProxy(dwarfFile *os.File, binFile *os.File, entryName string) *ProxyWrapper {
+func NewVariableProxy(dwarfFile parser.DebugFile, binFile *os.File, entryName string) (*ProxyWrapper, error) {
   dwarfReader, err := parser.GetReader(dwarfFile)
+  entry, err := parser.GetEntry(dwarfReader, entryName)
+  if err != nil {
+    return nil, err
+  }
+  newProxy, err := parser.NewVariableProxy(dwarfReader, entry)
   p := &ProxyWrapper{
-    proxy: NewVariableProxy(dwarfReader, entry),
+    proxy: newProxy,
     rw: binFile,
   }
-  return p
+  return p, err
 }
 
 func (p *ProxyWrapper) Write() error { 
