@@ -160,6 +160,15 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 	return proxy, err
 }
 
+func (p *VariableProxy) Init(reader *dwarf.Reader, entry *dwarf.Entry) error {
+	typeDefProxy, err := NewTypeDefProxy(reader, entry)
+	loc, err := GetLocation(entry)
+  p.Name = entry.Val(dwarf.AttrName).(string)
+	p.Type = *typeDefProxy
+  p.Address = ParseLocation(loc)
+  return err
+}
+
 // TODO: change the child hierarchy to use ordered maps not slices for lookup speed?
 func (p *VariableProxy) GetChild(childName string) (*TypeDefProxy, error) {
 	var err error = nil
