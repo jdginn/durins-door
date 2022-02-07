@@ -2,6 +2,7 @@ package parser
 
 import (
 	"debug/dwarf"
+  "debug/macho"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -13,14 +14,22 @@ import (
 // The downside here is that these tests are hostage to changes in that testcase.
 var testcaseFilename = "testcase-compiler/testcase.out.dSYM/Contents/Resources/DWARF/testcase.out"
 
-func TestGetReader(t *testing.T) {
+func getReaderFromFile(fileName string) (*dwarf.Reader, error) {
+  fh, err := macho.Open(fileName) 
+  if err != nil {
+    return nil, err
+  }
+  return GetReader(fh)
+}
+
+func TestgetReaderFromFile(t *testing.T) {
 	// For now, just assume testcase is always located in the right place
-	_, err := GetReader(testcaseFilename)
+	_, err := getReaderFromFile(testcaseFilename)
 	assert.Nil(t, err)
 }
 
 func testGetEntry(t *testing.T, requestedName string) *dwarf.Entry {
-	reader, _ := GetReader(testcaseFilename)
+	reader, _ := getReaderFromFile(testcaseFilename)
 	entry, err := GetEntry(reader, requestedName)
 	assert.Nil(t, err)
 	assert.Equal(t, entry.Val(dwarf.AttrName), requestedName)
@@ -28,7 +37,7 @@ func testGetEntry(t *testing.T, requestedName string) *dwarf.Entry {
 }
 
 func shouldFailGetEntry(t *testing.T, requestedName string, errorString string) {
-	reader, _ := GetReader(testcaseFilename)
+	reader, _ := getReaderFromFile(testcaseFilename)
 	_, err := GetEntry(reader, requestedName)
 	// Test that we can read twice in a row without building a new reader
 	_, err = GetEntry(reader, requestedName)
@@ -62,7 +71,7 @@ func testGetTypeEntry(t *testing.T, reader *dwarf.Reader, entryName string) *dwa
 }
 
 func TestGetTypeEntry(t *testing.T) {
-	reader, _ := GetReader(testcaseFilename)
+	reader, _ := getReaderFromFile(testcaseFilename)
 	var e *dwarf.Entry
 	e = testGetTypeEntry(t, reader, "formula_1_teams")
 	if e == nil {
