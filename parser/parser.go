@@ -2,16 +2,17 @@ package parser
 
 import (
 	"debug/dwarf"
-	"debug/macho"
 	"errors"
 	"fmt"
 )
 
-// Return a dwarf.Reader object for a macho file
-// TODO: support ELF in addition to macho...
-func GetReader(filename string) (*dwarf.Reader, error) {
-	machoFile, err := macho.Open(filename)
-	dwarfData, err := machoFile.DWARF()
+type DebugFile interface {
+  DWARF() (*dwarf.Data, error)
+} 
+
+// Return a dwarf.Reader object
+func GetReader[T DebugFile](fh T) (*dwarf.Reader, error) {
+	dwarfData, err := fh.DWARF()
 	entryReader := dwarfData.Reader()
 	return entryReader, err
 }

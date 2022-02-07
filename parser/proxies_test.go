@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewTypeDefProxy(t *testing.T) {
-	reader, _ := GetReader(testcaseFilename)
+	reader, _ := getReaderFromFile(testcaseFilename)
 	// var driverProxy *TypeDefProxy
 	var e *dwarf.Entry
 	var err error
@@ -112,7 +112,7 @@ func TestNewTypeDefProxy(t *testing.T) {
 }
 
 func TestTypeDefProxyGetChild(t *testing.T) {
-	reader, _ := GetReader(testcaseFilename)
+	reader, _ := getReaderFromFile(testcaseFilename)
 
 	// Navigate one level down
 	e, err := GetEntry(reader, "Driver")
@@ -145,7 +145,7 @@ func TestTypeDefProxyGetChild(t *testing.T) {
 }
 
 func TestNewVariableProxy(t *testing.T) {
-	reader, _ := GetReader(testcaseFilename)
+	reader, _ := getReaderFromFile(testcaseFilename)
 	var teamsProxy *VariableProxy
 	var e *dwarf.Entry
 	var err error
