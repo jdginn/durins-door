@@ -8,12 +8,12 @@ import (
 )
 
 type ProxyWrapper struct {
-  proxy *parser.VariableProxy
+  parser.VariableProxy
   rw *os.File
 }
 
 // TODO: this needs a lot of work. From the files, construct everything
-// we need for the NewVariableProxy and then read its contents
+// we need for the NewVariableWrapper and then read its contents
 // from binFile.
 //
 // Encapsulate anything having to do with dwarf.
@@ -23,23 +23,24 @@ type ProxyWrapper struct {
 // of this package)
 //
 // Keep in mind, the next step here is building a server
-func NewVariableProxy(dwarfFile parser.DebugFile, binFile *os.File, entryName string) (*ProxyWrapper, error) {
+func NewVariableWrapper(dwarfFile parser.DebugFile, binFile *os.File, entryName string) (*ProxyWrapper, error) {
   dwarfReader, err := parser.GetReader(dwarfFile)
   entry, err := parser.GetEntry(dwarfReader, entryName)
   if err != nil {
     return nil, err
   }
-  newProxy, err := parser.NewVariableProxy(dwarfReader, entry)
+  // newProxy, err := parser.NewVariableProxy(dwarfReader, entry)
   p := &ProxyWrapper{
-    proxy: newProxy,
     rw: binFile,
   }
+  // call parser.VariableProxy constructor
+  err = p.Init(dwarfReader, entry)
   return p, err
 }
 
 func (p *ProxyWrapper) Write() error { 
-  m := p.proxy.GetAccessMetadata()
-  value, err := p.proxy.Get()
+  m := p.GetAccessMetadata()
+  value, err := p.Get()
   if err != nil {
     return err
   }
@@ -48,7 +49,7 @@ func (p *ProxyWrapper) Write() error {
 }
 
 func (p *ProxyWrapper) Read() error { 
-  m := p.proxy.GetAccessMetadata()
+  m := p.GetAccessMetadata()
   value := make([]byte, m.Size)
   n, err := p.rw.ReadAt(value, int64(m.Address))
   if err != nil {
@@ -57,6 +58,6 @@ func (p *ProxyWrapper) Read() error {
   if n != m.Size {
     err = fmt.Errorf("Read the incorrect number of bytes\n Expected: %d bytes; Read %d", m.Size, n)
   }
-  p.proxy.Set(value)
+  p.Set(value)
   return err
 }
