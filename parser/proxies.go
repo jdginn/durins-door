@@ -3,6 +3,7 @@ package parser
 import (
 	"debug/dwarf"
 	"fmt"
+	// "strings"
 )
 
 // A TypedefProxy is an outward-facing representation of a typedef representing what a user
@@ -163,10 +164,10 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 func (p *VariableProxy) Init(reader *dwarf.Reader, entry *dwarf.Entry) error {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
 	loc, err := GetLocation(entry)
-  p.Name = entry.Val(dwarf.AttrName).(string)
+	p.Name = entry.Val(dwarf.AttrName).(string)
 	p.Type = *typeDefProxy
-  p.Address = ParseLocation(loc)
-  return err
+	p.Address = ParseLocation(loc)
+	return err
 }
 
 // TODO: change the child hierarchy to use ordered maps not slices for lookup speed?
@@ -232,6 +233,35 @@ func (p *VariableProxy) Get() ([]byte, error) {
 	return p.value, nil
 }
 
+// // Return the value of a single field within this variable
+// //
+// // Take a path to the desired field through arbitrary levels
+// // in the struct hierarchy. The hierarchy is formatted as it
+// // would be in C. Struct members are delimited by dots and
+// // and array indices are delimted by brackets. For example:
+// //
+// // myProxy.GetField("thisMember[3].thatMember.theOtherMember[2]")
+// func (p *VariableProxy) GetField(field string) (int, error) {
+//   // Look for members
+//   members := strings.Split(field, ".")
+//   for _, m := range members {
+//     split := strings.SplitAfterN(m, "[", 2)
+//     child, err := p.GetChild(split[0])
+//     if err != nil {
+//       return 0, err
+//     }
+//     if len(split) == 2 {
+//       // We have an array to index into
+//       // TODO: fix
+//       index := strings.SplitAfterN(split[1], "]", 2)[0]
+//       child = child[index]
+//     // TODO: multidemensional arrays
+//     } else if len(split) > 2 {
+//       return 0, fmt.Errorf("Parsed too many array indices out of path")
+//     }
+//   }
+// }
+
 // Return the value of a single field within this variable
 // Typically this will be used for a struct or class
 //
@@ -240,12 +270,20 @@ func (p *VariableProxy) GetField(field string) (int, error) {
 	fieldEntry, err := p.GetChild(field)
 	// TODO: what if the field is not byte-aligned?
 
-	// TODO: don't build this slice, just index into it like SetField
-	val := p.value[(fieldEntry.StructOffset / 8) : (fieldEntry.StructOffset/8)+(fieldEntry.BitSize/8)]
-	var valInt int = 0
-	n := len(val) - 1
-	for i, b := range val {
-		shiftAmt := (n - i) * 8
+	if p.value == nil {
+		err = fmt.Errorf("Proxy has no internal data to get")
+	}
+	startByte := fieldEntry.StructOffset / 8
+  byteLen := fieldEntry.BitSize / 8
+  endByte := startByte + byteLen - 1
+  if len(p.value) < (startByte + byteLen) {
+    err = fmt.Errorf("Internal data len %d bytes is smaller than the requested field %s at bytes %d:%d", len(p.value), fieldEntry.Name, startByte, endByte)
+    return 0, err
+	}
+  valInt := 0
+  for i := 0; i < byteLen; i++ {
+    b := p.value[startByte + i]
+    shiftAmt := (byteLen - i - 1) * 8
 		valInt = valInt + int(b)<<shiftAmt
 	}
 	return valInt, err

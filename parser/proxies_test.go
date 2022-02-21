@@ -228,7 +228,7 @@ func TestNewVariableProxy(t *testing.T) {
 	assert.Equal(t, "Team", teamsProxy.Type.Name)
 	assert.Equal(t, int(384), teamsProxy.Type.BitSize)
 	assert.Equal(t, teamChildren, teamsProxy.Type.Children)
-	assert.Equal(t, int(0x100003f50), teamsProxy.Address)
+	assert.Equal(t, int(0x100008010), teamsProxy.Address)
 }
 
 func TestGetSetVariableProxy(t *testing.T) {
@@ -262,6 +262,103 @@ func TestGetSetVariableProxy(t *testing.T) {
 		},
 	}
 	byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb}
+	vp := &VariableProxy{
+		Name:    "variable",
+		Type:    *tp,
+		Address: 0xfeedbeef,
+		value:   byteLiteral,
+	}
+
+	val, err := vp.Get()
+	assert.Equal(t, byteLiteral, val)
+	foo, err := vp.GetField("foo")
+	assert.Nil(t, err)
+	assert.Equal(t, int(0xfe), foo)
+	bar, err := vp.GetField("bar")
+	assert.Nil(t, err)
+	assert.Equal(t, int(0xedbeefaa), bar)
+	baz, err := vp.GetField("baz")
+	assert.Nil(t, err)
+	assert.Equal(t, int(0xbb), baz)
+
+	// Should fail because this data cannot fit in this variable's type
+	err = vp.Set([]byte{0x22, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77})
+	assert.Error(t, err)
+
+	err = vp.Set([]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66})
+
+	assert.Nil(t, err)
+	foo, err = vp.GetField("foo")
+	assert.Equal(t, int(0x11), foo)
+	bar, err = vp.GetField("bar")
+	assert.Equal(t, int(0x22334455), bar)
+	baz, err = vp.GetField("baz")
+	assert.Equal(t, int(0x66), baz)
+	assert.Nil(t, err)
+
+	err = vp.SetField("foo", int(0xff))
+	err = vp.SetField("bar", int(0x00c0ffee))
+	err = vp.SetField("baz", int(0x00))
+	assert.Nil(t, err)
+
+	val, err = vp.Get()
+	assert.Equal(t, []byte{0xff, 0x00, 0xc0, 0xff, 0xee, 0x00}, val)
+
+	foo, err = vp.GetField("foo")
+	assert.Equal(t, int(0xff), foo)
+	bar, err = vp.GetField("bar")
+	assert.Equal(t, int(0xc0ffee), bar)
+	baz, err = vp.GetField("baz")
+	assert.Equal(t, int(0x00), baz)
+	assert.Nil(t, err)
+}
+
+func TestGetSetMultilevelVariableProxy(t *testing.T) {
+	tp := &TypeDefProxy{
+		Name:         "type",
+		BitSize:      48,
+		StructOffset: 0,
+		ArrayRanges:  []int{},
+		Children: []TypeDefProxy{
+			{
+				Name:         "foo",
+				BitSize:      8,
+				StructOffset: 0,
+				ArrayRanges:  []int{},
+				Children: []TypeDefProxy{
+					// {
+					// 	Name:         "jonah",
+					// 	BitSize:      32,
+					// 	StructOffset: 8,
+					// 	ArrayRanges:  []int{},
+					// 	Children:     []TypeDefProxy{},
+					// },
+					// {
+					// 	Name:         "noah",
+					// 	BitSize:      8,
+					// 	StructOffset: 40,
+					// 	ArrayRanges:  []int{2},
+					// 	Children:     []TypeDefProxy{},
+					// },
+				},
+      },
+      {
+				Name:         "bar",
+				BitSize:      32,
+				StructOffset: 8,
+				ArrayRanges:  []int{},
+				Children: []TypeDefProxy{},
+			},
+      {
+				Name:         "baz",
+				BitSize:      8,
+				StructOffset: 40,
+				ArrayRanges:  []int{2},
+				Children: []TypeDefProxy{},
+			},
+		},
+	}
+  byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb, 0xcc, 0xdd}
 	vp := &VariableProxy{
 		Name:    "variable",
 		Type:    *tp,
@@ -310,3 +407,5 @@ func TestGetSetVariableProxy(t *testing.T) {
 	assert.Equal(t, int(0x00), baz)
 	assert.Nil(t, err)
 }
+
+func TestGetAccessMetadata(t *testing.T) {}
