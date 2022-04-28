@@ -213,6 +213,9 @@ func (p *VariableProxy) Set(value []byte) error {
 func (p *VariableProxy) SetField(field string, value int) error {
 	// TODO: what if the field is not byte-aligned?
 	fieldEntry, err := p.GetChild(field)
+  if err != nil {
+    return err
+  }
 	startIndex := fieldEntry.StructOffset / 8
 	n := fieldEntry.BitSize / 8
 	// TODO: surely there is a mroe elegant way
@@ -268,8 +271,9 @@ func (p *VariableProxy) Get() ([]byte, error) {
 // NOTE: at present, fields must be byte-aligned
 func (p *VariableProxy) GetField(field string) (int, error) {
 	fieldEntry, err := p.GetChild(field)
-	// TODO: what if the field is not byte-aligned?
-
+  if err != nil {
+    return 0, err
+  }
 	if p.value == nil {
 		err = fmt.Errorf("Proxy has no internal data to get")
 	}
