@@ -16,16 +16,16 @@ func TestNewTypeDefProxy(t *testing.T) {
 	e, err = GetEntry(reader, "char")
 	assert.Equal(t, nil, err)
 	driverProxy, err := NewTypeDefProxy(reader, e)
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 	assert.Equal(t, "char", driverProxy.Name)
 	assert.Equal(t, int(8), driverProxy.BitSize)
 	assert.Equal(t, make([]TypeDefProxy, 0), driverProxy.Children)
 
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, err = GetEntry(reader, "Driver")
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 	driverProxy, err = NewTypeDefProxy(reader, e)
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 	// NOTE: clang chooses to pad bools out to 4 bytes despite the typical implementation
 	// being only 1 byte
 	var driverChildren = []TypeDefProxy{
@@ -57,9 +57,9 @@ func TestNewTypeDefProxy(t *testing.T) {
 
 	// A type that includes the type from the previous test
 	e, err = GetEntry(reader, "Team")
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 	teamProxy, err := NewTypeDefProxy(reader, e)
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 
 	var teamChildren = []TypeDefProxy{
 		{
@@ -116,11 +116,11 @@ func TestTypeDefProxyGetChild(t *testing.T) {
 
 	// Navigate one level down
 	e, err := GetEntry(reader, "Driver")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	driverProxy, err := NewTypeDefProxy(reader, e)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	initialsProxy, err := driverProxy.GetChild("initials")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, "initials", initialsProxy.Name)
 	assert.Equal(t, int(8), initialsProxy.BitSize)
 	assert.Equal(t, int(0), initialsProxy.StructOffset)
@@ -129,15 +129,15 @@ func TestTypeDefProxyGetChild(t *testing.T) {
 	// Navigate two levels down
 	e, err = GetEntry(reader, "Team")
 	teamProxy, err := NewTypeDefProxy(reader, e)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	driverProxy, err = teamProxy.GetChild("drivers")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, "drivers", driverProxy.Name)
 	assert.Equal(t, int(12*8), driverProxy.BitSize)
 	assert.Equal(t, int(0), driverProxy.StructOffset)
 	assert.Equal(t, []int{2}, driverProxy.ArrayRanges)
 	initialsProxy, err = driverProxy.GetChild("initials")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, "initials", initialsProxy.Name)
 	assert.Equal(t, int(8), initialsProxy.BitSize)
 	assert.Equal(t, int(0), initialsProxy.StructOffset)
@@ -152,9 +152,9 @@ func TestNewVariableProxy(t *testing.T) {
 
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, err = GetEntry(reader, "formula_1_teams")
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 	teamsProxy, err = NewVariableProxy(reader, e)
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 	// First we confirm that this variable includes the same type we found in
 	// TestNewTypeDefProxy
 	var driverChildren = []TypeDefProxy{
@@ -272,13 +272,13 @@ func TestGetSetVariableProxy(t *testing.T) {
 	val, err := vp.Get()
 	assert.Equal(t, byteLiteral, val)
 	foo, err := vp.GetField("foo")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xfe), foo)
 	bar, err := vp.GetField("bar")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xedbeefaa), bar)
 	baz, err := vp.GetField("baz")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xbb), baz)
 
 	// Should fail because this data cannot fit in this variable's type
@@ -287,19 +287,19 @@ func TestGetSetVariableProxy(t *testing.T) {
 
 	err = vp.Set([]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	foo, err = vp.GetField("foo")
 	assert.Equal(t, int(0x11), foo)
 	bar, err = vp.GetField("bar")
 	assert.Equal(t, int(0x22334455), bar)
 	baz, err = vp.GetField("baz")
 	assert.Equal(t, int(0x66), baz)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = vp.SetField("foo", int(0xff))
 	err = vp.SetField("bar", int(0x00c0ffee))
 	err = vp.SetField("baz", int(0x00))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	val, err = vp.Get()
 	assert.Equal(t, []byte{0xff, 0x00, 0xc0, 0xff, 0xee, 0x00}, val)
@@ -310,7 +310,7 @@ func TestGetSetVariableProxy(t *testing.T) {
 	assert.Equal(t, int(0xc0ffee), bar)
 	baz, err = vp.GetField("baz")
 	assert.Equal(t, int(0x00), baz)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestGetSetMultilevelVariableProxy(t *testing.T) {
@@ -374,7 +374,7 @@ func TestGetSetMultilevelVariableProxy(t *testing.T) {
 	assert.Equal(t, int(0xedbeefaa), bar)
 	baz, err := vp.GetField("baz")
 	assert.Equal(t, int(0xbb), baz)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// Should fail because this data cannot fit in this variable's type
 	err = vp.Set([]byte{0x22, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77})
@@ -382,19 +382,19 @@ func TestGetSetMultilevelVariableProxy(t *testing.T) {
 
 	err = vp.Set([]byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66})
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	foo, err = vp.GetField("foo")
 	assert.Equal(t, int(0x11), foo)
 	bar, err = vp.GetField("bar")
 	assert.Equal(t, int(0x22334455), bar)
 	baz, err = vp.GetField("baz")
 	assert.Equal(t, int(0x66), baz)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = vp.SetField("foo", int(0xff))
 	err = vp.SetField("bar", int(0x00c0ffee))
 	err = vp.SetField("baz", int(0x00))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	val, err = vp.Get()
 	assert.Equal(t, []byte{0xff, 0x00, 0xc0, 0xff, 0xee, 0x00}, val)
@@ -405,7 +405,7 @@ func TestGetSetMultilevelVariableProxy(t *testing.T) {
 	assert.Equal(t, int(0xc0ffee), bar)
 	baz, err = vp.GetField("baz")
 	assert.Equal(t, int(0x00), baz)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestGetAccessMetadata(t *testing.T) {}
