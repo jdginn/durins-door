@@ -1,0 +1,3 @@
+[submodule "testcase-compiler"]
+	path = testcase-compiler
+	url = git@github.com:jdginn/testcase-compiler.git
