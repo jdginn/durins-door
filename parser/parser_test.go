@@ -3,35 +3,36 @@ package parser
 import (
 	"debug/dwarf"
   "debug/macho"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // For now, this functionality all relies upon having a reader object. The only good
 // idea I have for creating that reader is to read a DWARF file and the best way to do that
 // is to simply compile a testcase. I am using this: https://github.com/jdginn/testcase-compiler
-
+//
 // The downside here is that these tests are hostage to changes in that testcase.
 var testcaseFilename = "testcase-compiler/testcase.out.dSYM/Contents/Resources/DWARF/testcase.out"
 
 func getReaderFromFile(fileName string) (*dwarf.Reader, error) {
   fh, err := macho.Open(fileName) 
   if err != nil {
-    return nil, err
+    panic(err)
   }
   return GetReader(fh)
 }
 
-func TestgetReaderFromFile(t *testing.T) {
+func TestGetReaderFromFile(t *testing.T) {
 	// For now, just assume testcase is always located in the right place
 	_, err := getReaderFromFile(testcaseFilename)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func testGetEntry(t *testing.T, requestedName string) *dwarf.Entry {
 	reader, _ := getReaderFromFile(testcaseFilename)
 	entry, err := GetEntry(reader, requestedName)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, entry.Val(dwarf.AttrName), requestedName)
 	return entry
 }
@@ -39,9 +40,7 @@ func testGetEntry(t *testing.T, requestedName string) *dwarf.Entry {
 func shouldFailGetEntry(t *testing.T, requestedName string, errorString string) {
 	reader, _ := getReaderFromFile(testcaseFilename)
 	_, err := GetEntry(reader, requestedName)
-	// Test that we can read twice in a row without building a new reader
-	_, err = GetEntry(reader, requestedName)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetEntry(t *testing.T) {

@@ -25,6 +25,7 @@ type ProxyWrapper struct {
 // Keep in mind, the next step here is building a server
 func NewVariableWrapper(dwarfFile parser.DebugFile, binFile *os.File, entryName string) (*ProxyWrapper, error) {
   dwarfReader, err := parser.GetReader(dwarfFile)
+  if err != nil { return nil, err }
   entry, err := parser.GetEntry(dwarfReader, entryName)
   if err != nil {
     return nil, err
@@ -44,7 +45,7 @@ func (p *ProxyWrapper) Write() error {
   if err != nil {
     return err
   }
-  p.rw.WriteAt(value, int64(m.Address))
+  _, err = p.rw.WriteAt(value, int64(m.Address))
   return err
 }
 
@@ -56,8 +57,8 @@ func (p *ProxyWrapper) Read() error {
     return err
   }
   if n != m.Size {
-    err = fmt.Errorf("Read the incorrect number of bytes\n Expected: %d bytes; Read %d", m.Size, n)
+    return fmt.Errorf("Read the incorrect number of bytes\n Expected: %d bytes; Read %d", m.Size, n)
   }
-  p.Set(value)
+  err = p.Set(value)
   return err
 }

@@ -7,56 +7,63 @@ import (
 )
 
 type DebugFile interface {
-  DWARF() (*dwarf.Data, error)
-} 
+	DWARF() (*dwarf.Data, error)
+}
 
-// Return a dwarf.Reader object
+// Returns a dwarf.Reader object
 func GetReader[T DebugFile](fh T) (*dwarf.Reader, error) {
 	dwarfData, err := fh.DWARF()
+	if err != nil {
+		panic(err)
+	}
 	entryReader := dwarfData.Reader()
 	return entryReader, err
 }
 
-// Iterate once through the remaining entries looking for
-// an entry by name
-func getEntryByNameFromRemaining(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
+// Iterates once through the remaining entries looking for an entry by name
+//
+// The second argument returns true if the entry could be found
+func getFromRemaining(r *dwarf.Reader, name string) (*dwarf.Entry, bool, error) {
 	for {
-		e, err := reader.Next()
+		entry, err := r.Next()
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		if e == nil {
-			return e, err
+		if entry == nil {
+			return nil, false, err
 		}
 		// TODO: there may be an optimization to skip children in some cases?
-		if e.AttrField(dwarf.AttrName) == nil {
+		if entry.AttrField(dwarf.AttrName) == nil {
 			continue
 		}
-		if e.Val(dwarf.AttrName) == name {
-			return e, err
+		if entry.Val(dwarf.AttrName) == name {
+			return entry, true, nil
 		}
 	}
 }
 
-// Search for an entry matching a requested name
-func GetEntry(reader *dwarf.Reader, name string) (*dwarf.Entry, error) {
-	e, err := getEntryByNameFromRemaining(reader, name)
+// Searches for an entry matching a requested name
+func GetEntry(r *dwarf.Reader, name string) (*dwarf.Entry, error) {
+	e, ok, err := getFromRemaining(r, name)
+	if err != nil {
+		return nil, err
+	}
 	// If we don't find the entry by the time we reach the end of the DWARF
 	// section, we need to start searching again from the beginning. We avoid
 	// always seeking back to the beginning because in most cases, the entry
 	// we are looking for is more likely to come after the most recent
 	// entry.
-	if e == nil {
-		reader.Seek(0)
-		e, err = getEntryByNameFromRemaining(reader, name)
+	if !ok {
+		r.Seek(0)
+		e, ok, err = getFromRemaining(r, name)
 	}
-	if e == nil {
+	if !ok {
 		err = errors.New(fmt.Sprintf("Could not find entry %v", name))
 	}
 	return e, err
 }
 
-// Find the size of the type defined by this entry, in bits
+// Finds the size of the type defined by this entry, in bits
 func GetBitSize(entry *dwarf.Entry) (int, error) {
 	if hasAttr(entry, dwarf.AttrBitSize) {
 		return entry.Val(dwarf.AttrBitSize).(int), nil
@@ -67,18 +74,18 @@ func GetBitSize(entry *dwarf.Entry) (int, error) {
 	}
 }
 
-// Return a slice with en entry for the range of each array dimension
+// Returns a slice with en entry for the range of each array dimension
 //
 // Scalar types will have range []int{0}. The length of the return defines
 // the dimension of the array.
-func GetArrayRanges(reader *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
-	_, err := GetTypeEntry(reader, entry)
+func GetArrayRanges(r *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
+	_, err := GetTypeEntry(r, entry)
 	ranges := make([]int, 0)
 	// typeEntry, err := GetTypeEntry(reader, entry)
 	// var err error
 	for {
 		// fmt.Println("Stepping through a subrange:")
-		subrange, _ := reader.Next()
+		subrange, _ := r.Next()
 		// fmt.Println(FormatEntryInfo(subrange))
 
 		// When we've finished iterating over members, we are done with the meaningful
@@ -95,7 +102,7 @@ func GetArrayRanges(reader *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
 	return ranges, err
 }
 
-// Format key information about this entry as a string; strive to be easily readable.
+// Formats key information about this entry as a string; strives to be easily readable.
 func FormatEntryInfo(entry *dwarf.Entry) string {
 	if entry == nil {
 		fmt.Println("ERROR: nil entry passed")
@@ -146,7 +153,7 @@ func FormatEntryInfo(entry *dwarf.Entry) string {
 	return str
 }
 
-// Print each attribute for this entry.
+// Prints each attribute for this entry.
 func ListAllAttributes(entry *dwarf.Entry) {
 	fmt.Println("All fields in this entry:")
 	for _, field := range entry.Field {
@@ -154,7 +161,7 @@ func ListAllAttributes(entry *dwarf.Entry) {
 	}
 }
 
-// Return whether this entry contains a requested attribute
+// Return true if this entry contains the requested attribute
 func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
 	for _, field := range entry.Field {
 		if field.Attr == attr {
@@ -164,8 +171,9 @@ func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
 	return false
 }
 
+// Returns the location of an entry in memory
 func GetLocation(entry *dwarf.Entry) ([]uint8, error) {
-	var err error = nil
+	var err error
 	loc := entry.Val(dwarf.AttrLocation)
 	if loc == nil {
 		err = errors.New(fmt.Sprintf("Could not find data location for %v", entry))
@@ -174,17 +182,16 @@ func GetLocation(entry *dwarf.Entry) ([]uint8, error) {
 	return entry.Val(dwarf.AttrLocation).([]uint8), nil
 }
 
-// Translate a DW_AT_locationn attribute into an address
+// Translates a DW_AT_locationn attribute into an address
 func ParseLocation(location []uint8) int {
 	if location == nil {
-		fmt.Println("Cannot parse location for an empty slice!")
-		return 0
+		panic("Cannot parse location for an empty slice!")
 	}
 	// Ignore the first entry in the slice
 	// --> This somehow communicates a format?
 	// Build the last slice from right to left
 	location = location[1:]
-	var locationAsInt int 
+	var locationAsInt int
 	locationAsInt = 0
 	for i := 0; i < len(location); i++ {
 		locationAsInt += int(location[i]) << (8 * i)
@@ -192,7 +199,7 @@ func ParseLocation(location []uint8) int {
 	return locationAsInt
 }
 
-// Return the entry defining the type for a given entry. Returns self if
+// Returns the entry defining the type for a given entry. Returns self if
 // no such entry can be found. Leaves the reader at the new entry.
 func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
 
@@ -212,7 +219,7 @@ func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error
 	return typeDie, err
 }
 
-// Repeatedly call GetTypeEntry until arriving at an entry that truly describes
+// Repeatedly calls GetTypeEntry until arriving at an entry that truly describes
 // the underlying type of this entry. Skip over array and other non-typedef
 // entries
 func ResolveTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {

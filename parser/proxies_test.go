@@ -128,6 +128,7 @@ func TestTypeDefProxyGetChild(t *testing.T) {
 
 	// Navigate two levels down
 	e, err = GetEntry(reader, "Team")
+	assert.NoError(t, err)
 	teamProxy, err := NewTypeDefProxy(reader, e)
 	assert.NoError(t, err)
 	driverProxy, err = teamProxy.GetChild("drivers")
@@ -270,6 +271,7 @@ func TestGetSetVariableProxy(t *testing.T) {
 	}
 
 	val, err := vp.Get()
+	assert.NoError(t, err)
 	assert.Equal(t, byteLiteral, val)
 	foo, err := vp.GetField("foo")
 	assert.NoError(t, err)
@@ -289,26 +291,34 @@ func TestGetSetVariableProxy(t *testing.T) {
 
 	assert.NoError(t, err)
 	foo, err = vp.GetField("foo")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0x11), foo)
 	bar, err = vp.GetField("bar")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0x22334455), bar)
 	baz, err = vp.GetField("baz")
 	assert.Equal(t, int(0x66), baz)
 	assert.NoError(t, err)
 
 	err = vp.SetField("foo", int(0xff))
+	assert.NoError(t, err)
 	err = vp.SetField("bar", int(0x00c0ffee))
+	assert.NoError(t, err)
 	err = vp.SetField("baz", int(0x00))
 	assert.NoError(t, err)
 
 	val, err = vp.Get()
+	assert.NoError(t, err)
 	assert.Equal(t, []byte{0xff, 0x00, 0xc0, 0xff, 0xee, 0x00}, val)
 
 	foo, err = vp.GetField("foo")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xff), foo)
 	bar, err = vp.GetField("bar")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xc0ffee), bar)
 	baz, err = vp.GetField("baz")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0x00), baz)
 	assert.NoError(t, err)
 }
@@ -367,10 +377,13 @@ func TestGetSetMultilevelVariableProxy(t *testing.T) {
 	}
 
 	val, err := vp.Get()
+	assert.NoError(t, err)
 	assert.Equal(t, byteLiteral, val)
 	foo, err := vp.GetField("foo")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xfe), foo)
 	bar, err := vp.GetField("bar")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xedbeefaa), bar)
 	baz, err := vp.GetField("baz")
 	assert.Equal(t, int(0xbb), baz)
@@ -384,24 +397,31 @@ func TestGetSetMultilevelVariableProxy(t *testing.T) {
 
 	assert.NoError(t, err)
 	foo, err = vp.GetField("foo")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0x11), foo)
 	bar, err = vp.GetField("bar")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0x22334455), bar)
 	baz, err = vp.GetField("baz")
 	assert.Equal(t, int(0x66), baz)
 	assert.NoError(t, err)
 
 	err = vp.SetField("foo", int(0xff))
+	assert.NoError(t, err)
 	err = vp.SetField("bar", int(0x00c0ffee))
+	assert.NoError(t, err)
 	err = vp.SetField("baz", int(0x00))
 	assert.NoError(t, err)
 
 	val, err = vp.Get()
+	assert.NoError(t, err)
 	assert.Equal(t, []byte{0xff, 0x00, 0xc0, 0xff, 0xee, 0x00}, val)
 
 	foo, err = vp.GetField("foo")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xff), foo)
 	bar, err = vp.GetField("bar")
+	assert.NoError(t, err)
 	assert.Equal(t, int(0xc0ffee), bar)
 	baz, err = vp.GetField("baz")
 	assert.Equal(t, int(0x00), baz)
