@@ -228,7 +228,7 @@ func TestNewVariableProxy(t *testing.T) {
 	assert.Equal(t, "Team", teamsProxy.Type.Name)
 	assert.Equal(t, int(384), teamsProxy.Type.BitSize)
 	assert.Equal(t, teamChildren, teamsProxy.Type.Children)
-	assert.Equal(t, uint64(0x100008010), teamsProxy.Address)
+	assert.Equal(t, int(0x100003f50), teamsProxy.Address)
 }
 
 func TestGetSetVariableProxy(t *testing.T) {
@@ -272,11 +272,11 @@ func TestGetSetVariableProxy(t *testing.T) {
 	val, err := vp.Get()
 	assert.Equal(t, byteLiteral, val)
 	foo, err := vp.GetField("foo")
-	assert.Equal(t, uint64(0xfe), foo)
+	assert.Equal(t, int(0xfe), foo)
 	bar, err := vp.GetField("bar")
-	assert.Equal(t, uint64(0xedbeefaa), bar)
+	assert.Equal(t, int(0xedbeefaa), bar)
 	baz, err := vp.GetField("baz")
-	assert.Equal(t, uint64(0xbb), baz)
+	assert.Equal(t, int(0xbb), baz)
 	assert.Nil(t, err)
 
 	// Should fail because this data cannot fit in this variable's type
@@ -287,26 +287,26 @@ func TestGetSetVariableProxy(t *testing.T) {
 
 	assert.Nil(t, err)
 	foo, err = vp.GetField("foo")
-	assert.Equal(t, uint64(0x11), foo)
+	assert.Equal(t, int(0x11), foo)
 	bar, err = vp.GetField("bar")
-	assert.Equal(t, uint64(0x22334455), bar)
+	assert.Equal(t, int(0x22334455), bar)
 	baz, err = vp.GetField("baz")
-	assert.Equal(t, uint64(0x66), baz)
+	assert.Equal(t, int(0x66), baz)
 	assert.Nil(t, err)
 
-	err = vp.SetField("foo", uint64(0xff))
-	err = vp.SetField("bar", uint64(0x00c0ffee))
-	err = vp.SetField("baz", uint64(0x00))
+	err = vp.SetField("foo", int(0xff))
+	err = vp.SetField("bar", int(0x00c0ffee))
+	err = vp.SetField("baz", int(0x00))
 	assert.Nil(t, err)
 
 	val, err = vp.Get()
 	assert.Equal(t, []byte{0xff, 0x00, 0xc0, 0xff, 0xee, 0x00}, val)
 
 	foo, err = vp.GetField("foo")
-	assert.Equal(t, uint64(0xff), foo)
+	assert.Equal(t, int(0xff), foo)
 	bar, err = vp.GetField("bar")
-	assert.Equal(t, uint64(0xc0ffee), bar)
+	assert.Equal(t, int(0xc0ffee), bar)
 	baz, err = vp.GetField("baz")
-	assert.Equal(t, uint64(0x00), baz)
+	assert.Equal(t, int(0x00), baz)
 	assert.Nil(t, err)
 }

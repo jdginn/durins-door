@@ -111,7 +111,7 @@ func FormatEntryInfo(entry *dwarf.Entry) string {
 			str += fmt.Sprintf("  DW_AT_name: %s\n", name)
 		}
 		if field.Attr == dwarf.AttrByteSize {
-			byte_size := field.Val.(uint64)
+			byte_size := field.Val
 			str += fmt.Sprintf("  DW_AT_byte_size: %d\n", byte_size)
 		}
 		if field.Attr == dwarf.AttrLocation {
@@ -174,7 +174,7 @@ func GetLocation(entry *dwarf.Entry) ([]uint8, error) {
 }
 
 // Translate a DW_AT_locationn attribute into an address
-func ParseLocation(location []uint8) uint64 {
+func ParseLocation(location []uint8) int {
 	if location == nil {
 		fmt.Println("Cannot parse location for an empty slice!")
 		return 0
@@ -183,10 +183,10 @@ func ParseLocation(location []uint8) uint64 {
 	// --> This somehow communicates a format?
 	// Build the last slice from right to left
 	location = location[1:]
-	var locationAsInt uint64
+	var locationAsInt int 
 	locationAsInt = 0
 	for i := 0; i < len(location); i++ {
-		locationAsInt += uint64(location[i]) << (8 * i)
+		locationAsInt += int(location[i]) << (8 * i)
 	}
 	return locationAsInt
 }

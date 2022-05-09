@@ -140,7 +140,7 @@ func (p *TypeDefProxy) GetChild(childName string) (*TypeDefProxy, error) {
 type VariableProxy struct {
 	Name    string
 	Type    TypeDefProxy
-	Address uint64
+	Address int
 	value   []byte
 }
 
@@ -200,7 +200,7 @@ func (p *VariableProxy) Set(value []byte) error {
 // Typically this will be used for a struct or class
 //
 // NOTE: at present, fields must be byte-aligned
-func (p *VariableProxy) SetField(field string, value uint64) error {
+func (p *VariableProxy) SetField(field string, value int) error {
 	// TODO: what if the field is not byte-aligned?
 	fieldEntry, err := p.GetChild(field)
 	startIndex := fieldEntry.StructOffset / 8
@@ -227,27 +227,29 @@ func (p *VariableProxy) Get() ([]byte, error) {
 // Typically this will be used for a struct or class
 //
 // NOTE: at present, fields must be byte-aligned
-func (p *VariableProxy) GetField(field string) (uint64, error) {
+func (p *VariableProxy) GetField(field string) (int, error) {
 	fieldEntry, err := p.GetChild(field)
 	// TODO: what if the field is not byte-aligned?
 
 	// TODO: don't build this slice, just index into it like SetField
 	val := p.value[(fieldEntry.StructOffset / 8) : (fieldEntry.StructOffset/8)+(fieldEntry.BitSize/8)]
-	var valInt uint64 = 0
+	var valInt int = 0
 	n := len(val) - 1
 	for i, b := range val {
 		shiftAmt := (n - i) * 8
-		valInt = valInt + uint64(b)<<shiftAmt
+		valInt = valInt + int(b)<<shiftAmt
 	}
 	return valInt, err
 }
 
-// TODO: should proxies even have read/write methods? It seems this
-// should be handled on the client end
-func (p *VariableProxy) Write(value []byte) error { return nil }
+type AccessMetadata struct {
+  address int
+  size int
+}
 
-func (p *VariableProxy) WriteField(field string, value []byte) error { return nil }
-
-func (p *VariableProxy) Read(value []byte) ([]byte, error) { return p.value, nil }
-
-func (p *VariableProxy) ReadField(field string, value []byte) (uint64, error) { return 0, nil }
+func (p *VariableProxy) GetAccessMetatdata() *AccessMetadata {
+   &AccessMetadata{
+    address: p.Address,
+    size: p.BitSize,
+  }
+}
