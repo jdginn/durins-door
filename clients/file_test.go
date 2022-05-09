@@ -8,16 +8,16 @@ import(
 	"github.com/stretchr/testify/assert"
 )
 
-var testcaseDwarfFile = "../../testcase-compiler/main.out.dSYM/Contents/Resources/DWARF/main.out"
-var testcaseBinFile = "../../testcase-compiler/main.out"
+var testcaseDwarfFile = "../testcase-compiler/testcase.dwarf"
+var testcaseBinFile = "../testcase-compiler/testcase.out"
 
 func TestNewVariableWrapper(t *testing.T) {
   dbgReader, err := macho.Open(testcaseDwarfFile)
-  assert.Nil(t, err)
+  assert.NoError(t, err)
   binReader, err := os.Open(testcaseBinFile)
-  assert.Nil(t, err)
+  assert.NoError(t, err)
   proxy, err := NewVariableWrapper(dbgReader, binReader, "formula_1_teams")
-  assert.Nil(t, err)
+  assert.NoError(t, err)
   assert.NotNil(t, proxy)
 }
 
