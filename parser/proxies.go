@@ -27,21 +27,25 @@ type TypeDefProxy struct {
 func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error) {
 	var arrayRanges = []int{0}
 	var name string
-	var err error = nil
+	var err error
 	typeEntry, err := GetTypeEntry(reader, e)
 
 	// Need to handle traversing through array entries to get to the underlying typedefs.
 	if typeEntry.Tag == dwarf.TagArrayType {
-		arrayRanges, _ = GetArrayRanges(reader, e)
+		arrayRanges, err = GetArrayRanges(reader, e)
+    if err != nil { return nil, err }
 		// Having resolved the array information the real type is behind the ArrayType Entry
 		// This entry describes the array
-		typeEntry, _ = GetTypeEntry(reader, typeEntry)
+		typeEntry, err = GetTypeEntry(reader, typeEntry)
+    if err != nil { return nil, err }
 	}
 
 	if typeEntry.Tag == dwarf.TagConstType {
 		typeEntry, err = GetTypeEntry(reader, typeEntry)
+    if err != nil { return nil, err }
 		name = typeEntry.Val(dwarf.AttrName).(string)
 		typeEntry, err = GetTypeEntry(reader, typeEntry)
+    if err != nil { return nil, err }
 	} else {
 		name = e.Val(dwarf.AttrName).(string)
 	}
@@ -79,7 +83,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 		for {
 			child, err := reader.Next()
 			if err != nil {
-				fmt.Println("Error iterating children; **this error handling needs to be improved!**")
+				panic("Error iterating children; **this error handling needs to be improved!**")
 			}
 
 			// When we've finished iterating over members, we are done with the meaningful
@@ -96,12 +100,14 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 			// Note that constructing proxies for all children makes this constructor
 			// itself recursive.
 			childProxy, err := NewTypeDefProxy(reader, child)
+      if err != nil { panic(err) }
 			// TODO: is this the right way to do this in go?
 			proxy.Children = append(proxy.Children, *childProxy)
 			// How do we appropriately parse this stuff without having to jump around a bunch in the reader?
 			// ^ Is jumping around in the reader expensive?
 			reader.Seek(child.Offset)
-			reader.Next()
+      _, err = reader.Next()
+      if err != nil { panic(err) }
 		}
 	}
 	return proxy, err
@@ -151,6 +157,7 @@ type VariableProxy struct {
 // To create a variable from scratch , use *some other method*
 func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy, error) {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
+  if err != nil { return nil, err }
 	loc, err := GetLocation(entry)
 	proxy := &VariableProxy{
 		Name:    entry.Val(dwarf.AttrName).(string),
@@ -163,6 +170,7 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 
 func (p *VariableProxy) Init(reader *dwarf.Reader, entry *dwarf.Entry) error {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
+  if err != nil { return err }
 	loc, err := GetLocation(entry)
 	p.Name = entry.Val(dwarf.AttrName).(string)
 	p.Type = *typeDefProxy
@@ -172,7 +180,7 @@ func (p *VariableProxy) Init(reader *dwarf.Reader, entry *dwarf.Entry) error {
 
 // TODO: change the child hierarchy to use ordered maps not slices for lookup speed?
 func (p *VariableProxy) GetChild(childName string) (*TypeDefProxy, error) {
-	var err error = nil
+	var err error
 	typeDef := p.Type
 	for _, child := range typeDef.Children {
 		if child.Name == childName {
