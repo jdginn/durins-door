@@ -228,7 +228,7 @@ func TestNewVariableProxy(t *testing.T) {
 	assert.Equal(t, "Team", teamsProxy.Type.Name)
 	assert.Equal(t, int(384), teamsProxy.Type.BitSize)
 	assert.Equal(t, teamChildren, teamsProxy.Type.Children)
-	assert.Equal(t, uint64(0x100003f50), teamsProxy.Address)
+	assert.Equal(t, uint64(0x100008010), teamsProxy.Address)
 }
 
 func TestGetSetVariableProxy(t *testing.T) {
