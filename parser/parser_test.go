@@ -31,7 +31,7 @@ func TestGetReaderFromFile(t *testing.T) {
 
 func testGetEntry(t *testing.T, requestedName string) *dwarf.Entry {
 	reader, _ := getReaderFromFile(testcaseFilename)
-	entry, err := GetEntry(reader, requestedName)
+	entry, _, err := GetEntry(reader, requestedName)
 	assert.NoError(t, err)
 	assert.Equal(t, entry.Val(dwarf.AttrName), requestedName)
 	return entry
@@ -39,7 +39,7 @@ func testGetEntry(t *testing.T, requestedName string) *dwarf.Entry {
 
 func shouldFailGetEntry(t *testing.T, requestedName string, errorString string) {
 	reader, _ := getReaderFromFile(testcaseFilename)
-	_, err := GetEntry(reader, requestedName)
+	_, _, err := GetEntry(reader, requestedName)
 	assert.Error(t, err)
 }
 
@@ -52,7 +52,7 @@ func TestGetEntry(t *testing.T) {
 }
 
 func testGetTypeEntry(t *testing.T, reader *dwarf.Reader, entryName string) *dwarf.Entry {
-	entry, err := GetEntry(reader, entryName)
+	entry, _, err := GetEntry(reader, entryName)
 	if err != nil {
 		t.Fatal(err)
 	}
