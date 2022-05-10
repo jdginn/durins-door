@@ -1,42 +1,21 @@
 package file
 
 import(
-  "debug/macho"
-  "os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	// "github.com/jdginn/dwarf-explore"
 )
 
 var testcaseDwarfFile = "../testcase-compiler/testcase.dwarf"
 var testcaseBinFile = "../testcase-compiler/testcase.out"
 
-func TestNewVariableWrapper(t *testing.T) {
-  dbgReader, err := macho.Open(testcaseDwarfFile)
+// func wantsClient(c Client) {}
+
+func TestInterfaceMembership(t *testing.T) {
+  _, err := NewFileClient(testcaseBinFile)
   assert.NoError(t, err)
-  binReader, err := os.Open(testcaseBinFile)
-  assert.NoError(t, err)
-  proxy, err := NewVariableWrapper(dbgReader, binReader, "formula_1_teams")
-  assert.NoError(t, err)
-  assert.NotNil(t, proxy)
+
+  // wantsClient(dummy)
 }
-
-// func TestReadVariableWrapper(t *testing.T) {
-//   dbgReader, err := macho.Open(testcaseDwarfFile)
-//   binReader, err := os.Open(testcaseBinFile)
-//   proxy, err := NewVariableWrapper(dbgReader, binReader, "formula_1_teams")
-//   proxy.Read()
-//   assert.Equal(t, , proxy.Get())
-//   assert.Equal(t, , proxy.GetField())
-// }
-
-// func TestWriteVariableWrapper(t *testing.T) {
-//   dbgReader, err := macho.Open(testcaseDwarfFile)
-//   binReader, err := os.Open(testcaseBinFile)
-//   proxy, err := NewVariableWrapper(dbgReader, binReader, "formula_1_teams")
-//   proxy.SetField()
-//   proxy.SetField()
-//   proxy.SetField()
-//   proxy.Write()
-//   assert.Equal(t, proxy.Read())
-// }
