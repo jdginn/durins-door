@@ -163,6 +163,7 @@ type VariableProxy struct {
 	Type    TypeDefProxy
 	Address int
 	value   []byte
+	client  client.Client
 }
 
 // Construct a new VariableProxy for a variable known to the DWARF
@@ -180,6 +181,7 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 		Type:    *typeDefProxy,
 		Address: ParseLocation(loc),
 		value:   []byte{},
+		client:  nil,
 	}
 	return proxy, err
 }
@@ -319,9 +321,16 @@ func (p *VariableProxy) GetField(field string) (int, error) {
 	return valInt, err
 }
 
-func (p *VariableProxy) Read(c client.Client) error {
+func (p *VariableProxy) SetClient(c client.Client) {
+	p.client = c
+}
+
+func (p *VariableProxy) Read() error {
+	if p.client == nil {
+		return fmt.Errorf("Cannot read proxy %s: no client is set!", p.string())
+	}
 	// TODO: what if this isn't byte-aligned?
-	data, err := c.Read(p.Address, p.Type.BitSize/8)
+	data, err := p.client.Read(p.Address, p.Type.BitSize/8)
 	if err != nil {
 		return err
 	}
@@ -329,6 +338,9 @@ func (p *VariableProxy) Read(c client.Client) error {
 	return nil
 }
 
-func (p *VariableProxy) Write(c client.Client) error {
-	return c.Write(p.Address, p.value)
+func (p *VariableProxy) Write() error {
+	if p.client == nil {
+		return fmt.Errorf("Cannot write proxy %s: no client is set!", p.string())
+	}
+	return p.client.Write(p.Address, p.value)
 }
