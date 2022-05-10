@@ -1,4 +1,4 @@
-package file
+package file_test
 
 import (
 	"os"
@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/jdginn/dwarf-explore/client"
+	"github.com/jdginn/dwarf-explore/client/file"
 )
 
 var testcaseDwarfFile = "../../testcase-compiler/testcase.dwarf"
@@ -15,7 +16,7 @@ var testcaseBinFile = "../../testcase-compiler/testcase.out"
 func wantsClient(c client.Client) {}
 
 func TestInterfaceMembership(t *testing.T) {
-	dummy, err := NewFileClientFromName(testcaseBinFile)
+	dummy, err := file.NewFromPath(testcaseBinFile)
 	assert.NoError(t, err)
 
 	wantsClient(dummy)
@@ -25,7 +26,7 @@ func TestReadWrite(t *testing.T) {
 	f, err := os.Create("test.bin")
 	defer os.Remove("test.bin")
 	assert.NoError(t, err)
-	c, err := NewFileClient(f)
+	c, err := file.New(f)
 	assert.NoError(t, err)
 	err = c.Write(0, []byte("\xfe\xed\xbe\xef"))
 	assert.NoError(t, err)

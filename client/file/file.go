@@ -9,14 +9,14 @@ type FileClient struct {
 	rw *os.File
 }
 
-func NewFileClient(f *os.File) (*FileClient, error) {
+func New(f *os.File) (*FileClient, error) {
 	fw := &FileClient{
 		rw: f,
 	}
 	return fw, nil
 }
 
-func NewFileClientFromName(filename string) (*FileClient, error) {
+func NewFromPath(filename string) (*FileClient, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return &FileClient{}, fmt.Errorf("Could not open file %s:\n\n\t%s", filename, err)
