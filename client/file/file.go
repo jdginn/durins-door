@@ -6,7 +6,8 @@ import (
 )
 
 type FileClient struct {
-	rw *os.File
+	rw     *os.File
+	offset int64
 }
 
 func New(f *os.File) (*FileClient, error) {
@@ -22,14 +23,20 @@ func NewFromPath(filename string) (*FileClient, error) {
 		return &FileClient{}, fmt.Errorf("Could not open file %s:\n\n\t%s", filename, err)
 	}
 	fw := &FileClient{
-		rw: f,
+		rw:     f,
+		offset: 0,
 	}
 	return fw, nil
 }
 
+// TODO: setting offset in client seems like a bad idea
+func (p *FileClient) SetOffset(offset int64) {
+	p.offset = offset
+}
+
 func (p *FileClient) Read(addr int, size int) ([]byte, error) {
 	val := make([]byte, size)
-	n, err := p.rw.ReadAt(val, int64(addr))
+	n, err := p.rw.ReadAt(val, int64(addr)-p.offset)
 	if err != nil {
 		return val, err
 	}
@@ -40,6 +47,6 @@ func (p *FileClient) Read(addr int, size int) ([]byte, error) {
 }
 
 func (p *FileClient) Write(addr int, data []byte) error {
-	_, err := p.rw.WriteAt(data, int64(addr))
+	_, err := p.rw.WriteAt(data, int64(addr)-p.offset)
 	return err
 }
