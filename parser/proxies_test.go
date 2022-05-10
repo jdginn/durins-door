@@ -13,7 +13,7 @@ func TestNewTypeDefProxy(t *testing.T) {
 	var err error
 
 	// Start with a few trivial cases
-	e, err = GetEntry(reader, "char")
+	e, _, err = GetEntry(reader, "char")
 	assert.Equal(t, nil, err)
 	driverProxy, err := NewTypeDefProxy(reader, e)
 	assert.NoError(t, err)
@@ -22,7 +22,7 @@ func TestNewTypeDefProxy(t *testing.T) {
 	assert.Equal(t, make([]TypeDefProxy, 0), driverProxy.Children)
 
 	// Move on to non-trivial cases in which Children must actually be populated
-	e, err = GetEntry(reader, "Driver")
+	e, _, err = GetEntry(reader, "Driver")
 	assert.NoError(t, err)
 	driverProxy, err = NewTypeDefProxy(reader, e)
 	assert.NoError(t, err)
@@ -56,7 +56,7 @@ func TestNewTypeDefProxy(t *testing.T) {
 	assert.Equal(t, driverChildren, driverProxy.Children)
 
 	// A type that includes the type from the previous test
-	e, err = GetEntry(reader, "Team")
+	e, _, err = GetEntry(reader, "Team")
 	assert.NoError(t, err)
 	teamProxy, err := NewTypeDefProxy(reader, e)
 	assert.NoError(t, err)
@@ -115,7 +115,7 @@ func TestTypeDefProxyGetChild(t *testing.T) {
 	reader, _ := getReaderFromFile(testcaseFilename)
 
 	// Navigate one level down
-	e, err := GetEntry(reader, "Driver")
+	e, _, err := GetEntry(reader, "Driver")
 	assert.NoError(t, err)
 	driverProxy, err := NewTypeDefProxy(reader, e)
 	assert.NoError(t, err)
@@ -127,7 +127,7 @@ func TestTypeDefProxyGetChild(t *testing.T) {
 	assert.Equal(t, []int{2}, initialsProxy.ArrayRanges)
 
 	// Navigate two levels down
-	e, err = GetEntry(reader, "Team")
+	e, _, err = GetEntry(reader, "Team")
 	assert.NoError(t, err)
 	teamProxy, err := NewTypeDefProxy(reader, e)
 	assert.NoError(t, err)
@@ -152,7 +152,7 @@ func TestNewVariableProxy(t *testing.T) {
 	var err error
 
 	// Move on to non-trivial cases in which Children must actually be populated
-	e, err = GetEntry(reader, "formula_1_teams")
+	e, _, err = GetEntry(reader, "formula_1_teams")
 	assert.NoError(t, err)
 	teamsProxy, err = NewVariableProxy(reader, e)
 	assert.NoError(t, err)

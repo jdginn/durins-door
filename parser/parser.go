@@ -23,30 +23,38 @@ func GetReader[T DebugFile](fh T) (*dwarf.Reader, error) {
 // Iterates once through the remaining entries looking for an entry by name
 //
 // The second argument returns true if the entry could be found
-func getFromRemaining(r *dwarf.Reader, name string) (*dwarf.Entry, bool, error) {
+//
+// TODO: this many return values seems like a bad idea
+func getFromRemaining(r *dwarf.Reader, name string) (*dwarf.Entry, *dwarf.Entry, bool, error) {
+	var lastCU *dwarf.Entry
 	for {
 		entry, err := r.Next()
 		if err != nil {
-			return nil, false, err
+			return nil, nil, false, err
 		}
 		if entry == nil {
-			return nil, false, err
+			return nil, nil, false, err
+		}
+		if entry.Tag == dwarf.TagCompileUnit {
+			lastCU = entry
 		}
 		// TODO: there may be an optimization to skip children in some cases?
 		if entry.AttrField(dwarf.AttrName) == nil {
 			continue
 		}
 		if entry.Val(dwarf.AttrName) == name {
-			return entry, true, nil
+			return entry, lastCU, true, nil
 		}
 	}
 }
 
 // Searches for an entry matching a requested name
-func GetEntry(r *dwarf.Reader, name string) (*dwarf.Entry, error) {
-	e, ok, err := getFromRemaining(r, name)
+//
+// TODO: this many return values seems like a bad idea
+func GetEntry(r *dwarf.Reader, name string) (*dwarf.Entry, *dwarf.Entry, error) {
+	e, lastCU, ok, err := getFromRemaining(r, name)
 	if err != nil {
-		return nil, err
+		return nil, lastCU, err
 	}
 	// If we don't find the entry by the time we reach the end of the DWARF
 	// section, we need to start searching again from the beginning. We avoid
@@ -55,12 +63,12 @@ func GetEntry(r *dwarf.Reader, name string) (*dwarf.Entry, error) {
 	// entry.
 	if !ok {
 		r.Seek(0)
-		e, ok, err = getFromRemaining(r, name)
+		e, lastCU, ok, err = getFromRemaining(r, name)
 	}
 	if !ok {
-		err = errors.New(fmt.Sprintf("Could not find entry %v", name))
+		err = fmt.Errorf("Could not find entry %v", name)
 	}
-	return e, err
+	return e, lastCU, err
 }
 
 // Finds the size of the type defined by this entry, in bits
