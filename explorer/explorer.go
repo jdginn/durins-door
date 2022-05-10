@@ -40,7 +40,9 @@ func (e *Explorer) SetClient(c client.Client) error {
 // Returns a VariableProxy to work with
 func (e *Explorer) GetProxy(name string) (*parser.VariableProxy, error) {
 	levels := strings.Split(name, "/")
-	entry, err := parser.GetEntry(e.reader, levels[0])
+	entry, cu, err := parser.GetEntry(e.reader, levels[0])
+	offset := int64(cu.AttrField(dwarf.AttrLowpc).Val.(uint64))
+	e.client.SetOffset(offset)
 	if err != nil {
 		return nil, err
 	}
