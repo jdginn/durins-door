@@ -37,8 +37,21 @@ func (e *Explorer) SetClient(c client.Client) error {
 	return nil
 }
 
+func (e *Explorer) GetTypeDefProxy(name string) (*parser.TypeDefProxy, error) {
+	levels := strings.Split(name, "/")
+	entry, _, err := parser.GetEntry(e.reader, levels[0])
+	if err != nil {
+		return nil, err
+	}
+	p, err := parser.NewTypeDefProxy(e.reader, entry)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
 // Returns a VariableProxy to work with
-func (e *Explorer) GetProxy(name string) (*parser.VariableProxy, error) {
+func (e *Explorer) GetVariableProxy(name string) (*parser.VariableProxy, error) {
 	levels := strings.Split(name, "/")
 	entry, cu, err := parser.GetEntry(e.reader, levels[0])
 	offset := int64(cu.AttrField(dwarf.AttrLowpc).Val.(uint64))
