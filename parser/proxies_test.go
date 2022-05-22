@@ -335,7 +335,7 @@ func TestGetSetMultilevelVariableProxy(t *testing.T) {
 				BitSize:      8,
 				StructOffset: 0,
 				ArrayRanges:  []int{},
-				Children: []TypeDefProxy{
+				Children:     []TypeDefProxy{
 					// {
 					// 	Name:         "jonah",
 					// 	BitSize:      32,
@@ -351,24 +351,24 @@ func TestGetSetMultilevelVariableProxy(t *testing.T) {
 					// 	Children:     []TypeDefProxy{},
 					// },
 				},
-      },
-      {
+			},
+			{
 				Name:         "bar",
 				BitSize:      32,
 				StructOffset: 8,
 				ArrayRanges:  []int{},
-				Children: []TypeDefProxy{},
+				Children:     []TypeDefProxy{},
 			},
-      {
+			{
 				Name:         "baz",
 				BitSize:      8,
 				StructOffset: 40,
 				ArrayRanges:  []int{2},
-				Children: []TypeDefProxy{},
+				Children:     []TypeDefProxy{},
 			},
 		},
 	}
-  byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb, 0xcc, 0xdd}
+	byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb, 0xcc, 0xdd}
 	vp := &VariableProxy{
 		Name:    "variable",
 		Type:    *tp,
