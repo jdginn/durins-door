@@ -4,6 +4,8 @@ import (
 	"debug/dwarf"
 	"fmt"
 	// "strings"
+
+	"github.com/jdginn/dwarf-explore/client"
 )
 
 // A TypedefProxy is an outward-facing representation of a typedef representing what a user
@@ -33,19 +35,27 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 	// Need to handle traversing through array entries to get to the underlying typedefs.
 	if typeEntry.Tag == dwarf.TagArrayType {
 		arrayRanges, err = GetArrayRanges(reader, e)
-    if err != nil { return nil, err }
+		if err != nil {
+			return nil, err
+		}
 		// Having resolved the array information the real type is behind the ArrayType Entry
 		// This entry describes the array
 		typeEntry, err = GetTypeEntry(reader, typeEntry)
-    if err != nil { return nil, err }
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if typeEntry.Tag == dwarf.TagConstType {
 		typeEntry, err = GetTypeEntry(reader, typeEntry)
-    if err != nil { return nil, err }
+		if err != nil {
+			return nil, err
+		}
 		name = typeEntry.Val(dwarf.AttrName).(string)
 		typeEntry, err = GetTypeEntry(reader, typeEntry)
-    if err != nil { return nil, err }
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		name = e.Val(dwarf.AttrName).(string)
 	}
@@ -100,14 +110,18 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 			// Note that constructing proxies for all children makes this constructor
 			// itself recursive.
 			childProxy, err := NewTypeDefProxy(reader, child)
-      if err != nil { panic(err) }
+			if err != nil {
+				panic(err)
+			}
 			// TODO: is this the right way to do this in go?
 			proxy.Children = append(proxy.Children, *childProxy)
 			// How do we appropriately parse this stuff without having to jump around a bunch in the reader?
 			// ^ Is jumping around in the reader expensive?
 			reader.Seek(child.Offset)
-      _, err = reader.Next()
-      if err != nil { panic(err) }
+			_, err = reader.Next()
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 	return proxy, err
@@ -157,7 +171,9 @@ type VariableProxy struct {
 // To create a variable from scratch , use *some other method*
 func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy, error) {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
-  if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	loc, err := GetLocation(entry)
 	proxy := &VariableProxy{
 		Name:    entry.Val(dwarf.AttrName).(string),
@@ -170,7 +186,9 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 
 func (p *VariableProxy) Init(reader *dwarf.Reader, entry *dwarf.Entry) error {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
-  if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	loc, err := GetLocation(entry)
 	p.Name = entry.Val(dwarf.AttrName).(string)
 	p.Type = *typeDefProxy
@@ -221,9 +239,9 @@ func (p *VariableProxy) Set(value []byte) error {
 func (p *VariableProxy) SetField(field string, value int) error {
 	// TODO: what if the field is not byte-aligned?
 	fieldEntry, err := p.GetChild(field)
-  if err != nil {
-    return err
-  }
+	if err != nil {
+		return err
+	}
 	startIndex := fieldEntry.StructOffset / 8
 	n := fieldEntry.BitSize / 8
 	// TODO: surely there is a mroe elegant way
@@ -279,36 +297,38 @@ func (p *VariableProxy) Get() ([]byte, error) {
 // NOTE: at present, fields must be byte-aligned
 func (p *VariableProxy) GetField(field string) (int, error) {
 	fieldEntry, err := p.GetChild(field)
-  if err != nil {
-    return 0, err
-  }
+	if err != nil {
+		return 0, err
+	}
 	if p.value == nil {
 		err = fmt.Errorf("Proxy has no internal data to get")
 	}
 	startByte := fieldEntry.StructOffset / 8
-  byteLen := fieldEntry.BitSize / 8
-  endByte := startByte + byteLen - 1
-  if len(p.value) < (startByte + byteLen) {
-    err = fmt.Errorf("Internal data len %d bytes is smaller than the requested field %s at bytes %d:%d", len(p.value), fieldEntry.Name, startByte, endByte)
-    return 0, err
+	byteLen := fieldEntry.BitSize / 8
+	endByte := startByte + byteLen - 1
+	if len(p.value) < (startByte + byteLen) {
+		err = fmt.Errorf("Internal data len %d bytes is smaller than the requested field %s at bytes %d:%d", len(p.value), fieldEntry.Name, startByte, endByte)
+		return 0, err
 	}
-  valInt := 0
-  for i := 0; i < byteLen; i++ {
-    b := p.value[startByte + i]
-    shiftAmt := (byteLen - i - 1) * 8
+	valInt := 0
+	for i := 0; i < byteLen; i++ {
+		b := p.value[startByte+i]
+		shiftAmt := (byteLen - i - 1) * 8
 		valInt = valInt + int(b)<<shiftAmt
 	}
 	return valInt, err
 }
 
-type AccessMetadata struct {
-	Address int
-	Size    int
+func (p *VariableProxy) Read(c client.Client) error {
+	// TODO: what if this isn't byte-aligned?
+	data, err := c.Read(p.Address, p.Type.BitSize/8)
+	if err != nil {
+		return err
+	}
+	p.Set(data)
+	return nil
 }
 
-func (p *VariableProxy) GetAccessMetadata() AccessMetadata {
-	return AccessMetadata{
-		Address: p.Address,
-		Size:    p.Type.BitSize,
-	}
+func (p *VariableProxy) Write(c client.Client) error {
+	return c.Write(p.Address, p.value)
 }

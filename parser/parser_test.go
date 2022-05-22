@@ -2,7 +2,7 @@ package parser
 
 import (
 	"debug/dwarf"
-  "debug/macho"
+	"debug/macho"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,11 +16,11 @@ import (
 var testcaseFilename = "testcase-compiler/testcase.out.dSYM/Contents/Resources/DWARF/testcase.out"
 
 func getReaderFromFile(fileName string) (*dwarf.Reader, error) {
-  fh, err := macho.Open(fileName) 
-  if err != nil {
-    panic(err)
-  }
-  return GetReader(fh)
+	fh, err := macho.Open(fileName)
+	if err != nil {
+		panic(err)
+	}
+	return GetReader(fh)
 }
 
 func TestGetReaderFromFile(t *testing.T) {
