@@ -3,6 +3,8 @@ package parser
 import (
 	"debug/dwarf"
 	"debug/macho"
+  "fmt"
+  "os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,12 +15,13 @@ import (
 // is to simply compile a testcase. I am using this: https://github.com/jdginn/testcase-compiler
 //
 // The downside here is that these tests are hostage to changes in that testcase.
-var testcaseFilename = "testcase-compiler/testcase.out.dSYM/Contents/Resources/DWARF/testcase.out"
+var testcaseFilename = "../testcase-compiler/testcase.dwarf"
 
 func getReaderFromFile(fileName string) (*dwarf.Reader, error) {
 	fh, err := macho.Open(fileName)
 	if err != nil {
-		panic(err)
+    wd, _ := os.Getwd()
+    panic(fmt.Errorf("Could not open file %s:\n\ncwd:  %s\n\nerror message:\n\t%s", fileName, wd, err))
 	}
 	return GetReader(fh)
 }

@@ -20,7 +20,8 @@ func New(f *os.File) (*FileClient, error) {
 func NewFromPath(filename string) (*FileClient, error) {
 	f, err := os.OpenFile(filename, os.O_RDWR, 0777)
 	if err != nil {
-		return &FileClient{}, fmt.Errorf("Could not open file %s:\n\n\t%s", filename, err)
+    wd, _ := os.Getwd()
+    return &FileClient{}, fmt.Errorf("Could not open file %s:\n\ncwd:  %s\n\nerror message:\n\t%s", filename, wd, err)
 	}
 	fw := &FileClient{
 		rw:     f,
