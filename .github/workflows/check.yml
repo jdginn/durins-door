@@ -14,3 +14,16 @@ jobs:
       - run: make check
       - run: ls testcase-compiler
       # - run: cat testcase-compiler/Makefile
+  check-ubuntu:
+    runs-on: ubuntu-18.04 
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.18.0'
+      - run: go version
+      - run: make check
+      - run: ls testcase-compiler
+      # - run: cat testcase-compiler/Makefile

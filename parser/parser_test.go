@@ -2,12 +2,13 @@ package parser
 
 import (
 	"debug/dwarf"
-	"debug/macho"
   "fmt"
   "os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/jdginn/dwarf-explore/explorer/plat"
 )
 
 // For now, this functionality all relies upon having a reader object. The only good
@@ -18,7 +19,7 @@ import (
 var testcaseFilename = "../testcase-compiler/testcase.dwarf"
 
 func getReaderFromFile(fileName string) (*dwarf.Reader, error) {
-	fh, err := macho.Open(fileName)
+  fh, err := plat.GetReaderFromFile(fileName)
 	if err != nil {
     wd, _ := os.Getwd()
     panic(fmt.Errorf("Could not open file %s:\n\ncwd:  %s\n\nerror message:\n\t%s", fileName, wd, err))
