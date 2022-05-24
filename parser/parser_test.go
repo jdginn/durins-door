@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/jdginn/dwarf-explore/explorer/plat"
+	"github.com/jdginn/durins-door/explorer/plat"
 )
 
 // For now, this functionality all relies upon having a reader object. The only good

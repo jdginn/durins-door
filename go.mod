@@ -1,4 +1,4 @@
-module github.com/jdginn/dwarf-explore
+module github.com/jdginn/durins-door
 
 go 1.18
 

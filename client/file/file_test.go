@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/jdginn/dwarf-explore/client"
-	"github.com/jdginn/dwarf-explore/client/file"
+	"github.com/jdginn/durins-door/client"
+	"github.com/jdginn/durins-door/client/file"
 )
 
 var testcaseDwarfFile = "../../testcase-compiler/testcase.dwarf"

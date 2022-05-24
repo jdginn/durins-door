@@ -1,3 +1,3 @@
-[![Coverage Status](https://coveralls.io/repos/github/jdginn/dwarf-explore/badge.svg?branch=cover)](https://coveralls.io/github/jdginn/dwarf-explore?branch=cover)
+[![Coverage Status](https://coveralls.io/repos/github/jdginn/durins-door/badge.svg?branch=cover)](https://coveralls.io/github/jdginn/durins-door?branch=cover)
 
-# Dwarf-explore is a Rosetta stone for programming languages using DWARF
+# Durins-door is a Rosetta stone for programming languages using DWARF

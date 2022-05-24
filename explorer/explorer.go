@@ -4,9 +4,9 @@ import (
 	"debug/dwarf"
 	"strings"
 
-	"github.com/jdginn/dwarf-explore/client"
-	"github.com/jdginn/dwarf-explore/explorer/plat"
-	"github.com/jdginn/dwarf-explore/parser"
+	"github.com/jdginn/durins-door/client"
+	"github.com/jdginn/durins-door/explorer/plat"
+	"github.com/jdginn/durins-door/parser"
 )
 
 // Struct that mediates DWARF parsing as well as reading and writing
