@@ -5,7 +5,7 @@ import (
 	"fmt"
 	// "strings"
 
-	"github.com/jdginn/dwarf-explore/client"
+	"github.com/jdginn/durins-door/client"
 )
 
 // A TypedefProxy is an outward-facing representation of a typedef representing what a user
