@@ -20,6 +20,7 @@ func NewExplorer() *Explorer {
 	return &Explorer{}
 }
 
+// Creates a reader within this explorer, reading the specified file
 func (e *Explorer) CreateReaderFromFile(fname string) error {
 	e.readerFile = fname
 	fh, err := plat.GetReaderFromFile(fname)
@@ -34,10 +35,12 @@ func (e *Explorer) CreateReaderFromFile(fname string) error {
 	return nil
 }
 
+// Returns the name of the DWARF file this explorer is reading
 func (e *Explorer) GetReaderFilename() string {
 	return e.readerFile
 }
 
+// Sets this explorer's client
 func (e *Explorer) SetClient(c client.Client) error {
 	e.client = c
 	return nil
@@ -54,6 +57,17 @@ func (e *Explorer) GetTypeDefProxy(name string) (*parser.TypeDefProxy, error) {
 		return nil, err
 	}
 	return p, nil
+}
+
+// Returns a list of all CUs in this file
+func (e *Explorer) ListCUs() ([]string, error) {
+  CUs, err := parser.GetCUs(e.reader)
+  ret := make([]string, len(CUs), len(CUs))
+  if err != nil { return []string{}, err }
+  for i, cu := range CUs {
+    ret[i] = cu.Val(dwarf.AttrName).(string)
+  }
+  return ret, nil
 }
 
 // Returns a VariableProxy to work with

@@ -20,6 +20,24 @@ func GetReader[T DebugFile](fh T) (*dwarf.Reader, error) {
 	return entryReader, err
 }
 
+// Return a slice of all CompileUnits in the DWARF
+func GetCUs(r *dwarf.Reader) ([]*dwarf.Entry, error) {
+  entries := make([]*dwarf.Entry, 0)
+  for {
+    entry, err := r.Next()
+    // Since we just want CUs, we never want to see their children
+    r.SkipChildren()
+    if err != nil {
+      return entries, err
+    }
+    if entry == nil { break }
+    if entry.Tag == dwarf.TagCompileUnit {
+      entries = append(entries, entry)
+    }
+  }
+  return entries, nil
+}
+
 // Iterates once through the remaining entries looking for an entry by name
 //
 // The second argument returns true if the entry could be found
