@@ -11,15 +11,17 @@ import (
 
 // Struct that mediates DWARF parsing as well as reading and writing
 type Explorer struct {
-	reader *dwarf.Reader
-	client client.Client
+	readerFile string
+	reader     *dwarf.Reader
+	client     client.Client
 }
 
 func NewExplorer() *Explorer {
 	return &Explorer{}
 }
 
-func (e *Explorer) GetReaderFromFile(fname string) error {
+func (e *Explorer) CreateReaderFromFile(fname string) error {
+	e.readerFile = fname
 	fh, err := plat.GetReaderFromFile(fname)
 	if err != nil {
 		return err
@@ -30,6 +32,10 @@ func (e *Explorer) GetReaderFromFile(fname string) error {
 	}
 	e.reader = reader
 	return nil
+}
+
+func (e *Explorer) GetReaderFilename() string {
+	return e.readerFile
 }
 
 func (e *Explorer) SetClient(c client.Client) error {
