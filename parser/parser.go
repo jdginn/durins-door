@@ -26,7 +26,9 @@ func GetCUs(r *dwarf.Reader) ([]*dwarf.Entry, error) {
   })
 }
 
-// Return a slice of all CompileUnits in the DWARF
+// Return a slice of all child entries of the current entry
+//
+// TODO: this doesn't seem to work yet
 func GetChildren(r *dwarf.Reader, f func(*dwarf.Entry) bool) ([]*dwarf.Entry, error) {
 	entries := make([]*dwarf.Entry, 0)
 	for {
