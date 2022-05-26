@@ -2,8 +2,8 @@ package parser
 
 import (
 	"debug/dwarf"
-  "fmt"
-  "os"
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,10 +19,10 @@ import (
 var testcaseFilename = "../testcase-compiler/testcase.dwarf"
 
 func getReaderFromFile(fileName string) (*dwarf.Reader, error) {
-  fh, err := plat.GetReaderFromFile(fileName)
+	fh, err := plat.GetReaderFromFile(fileName)
 	if err != nil {
-    wd, _ := os.Getwd()
-    panic(fmt.Errorf("Could not open file %s:\n\ncwd:  %s\n\nerror message:\n\t%s", fileName, wd, err))
+		wd, _ := os.Getwd()
+		panic(fmt.Errorf("Could not open file %s:\n\ncwd:  %s\n\nerror message:\n\t%s", fileName, wd, err))
 	}
 	return GetReader(fh)
 }
@@ -103,4 +103,42 @@ func TestGetTypeDie(t *testing.T) {
 }
 
 func TestListAllAttributes(t *testing.T) {
+}
+
+func TestGetEntriesOnLevel(t *testing.T) {
+	reader, _ := getReaderFromFile(testcaseFilename)
+	entries, err := GetChildren(reader, func(*dwarf.Entry) bool {
+    return true
+  })
+	assert.NoError(t, err)
+	fmt.Println(entries)
+	assert.Equal(t, 1, len(entries))
+
+  _, _, err = GetEntry(reader, "formula_1_teams")
+	entries, err = GetChildren(reader, func(e *dwarf.Entry) bool {
+    return e.Tag == dwarf.TagVariable
+  })
+	assert.NoError(t, err)
+  fmt.Printf("Entries:\n")
+  for _, e := range entries {
+    fmt.Printf("\t%s\n", e.Val(dwarf.AttrName))
+  }
+
+  _, _, err = GetEntry(reader, "mercedes")
+	entries, err = GetChildren(reader, func(e *dwarf.Entry) bool {
+    return e.Tag == dwarf.TagVariable
+  })
+	assert.NoError(t, err)
+  fmt.Printf("Entries:\n")
+  for _, e := range entries {
+    fmt.Printf("\t%s\n", e.Val(dwarf.AttrName))
+  }
+}
+
+func TestGetCUs(t *testing.T) {
+	reader, _ := getReaderFromFile(testcaseFilename)
+	entries, err := GetCUs(reader)
+	assert.NoError(t, err)
+	fmt.Println(entries)
+	assert.Equal(t, 1, len(entries))
 }
