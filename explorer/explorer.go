@@ -15,10 +15,19 @@ type Explorer struct {
 	readerFile string
 	reader     *dwarf.Reader
 	client     client.Client
+	ctx        explorerCtx
 }
 
 func NewExplorer() *Explorer {
-	return &Explorer{}
+	return &Explorer{
+		ctx: explorerCtx{},
+	}
+}
+
+func (c Explorer) jumpTo() {
+  if len(c.ctx.levels) > 0 {
+    c.reader.Seek(c.ctx.levels[len(c.ctx.levels)-1].Offset)
+  }
 }
 
 // Creates a reader within this explorer, reading the specified file
@@ -68,8 +77,8 @@ func (e *Explorer) ShowAllChildren() ([]string, error) {
 		return nil, fmt.Errorf("Cannot List CUs without setting a reader. Create a reader using CreateReaderFromFile().")
 	}
 	entries, err := parser.GetChildren(e.reader, func(entry *dwarf.Entry) bool {
-    return entry.Tag == dwarf.TagVariable
-  })
+		return (entry.Tag == dwarf.TagVariable || entry.Tag == dwarf.TagCompileUnit)
+	})
 	if err != nil {
 		return []string{}, err
 	}
@@ -78,6 +87,19 @@ func (e *Explorer) ShowAllChildren() ([]string, error) {
 		ret[i] = e.Val(dwarf.AttrName).(string)
 	}
 	return ret, nil
+}
+
+func (e *Explorer) StepIntoChild(childName string) {
+	entry, _, err := parser.GetEntry(e.reader, childName)
+	if err != nil {
+		panic(err)
+	}
+	e.ctx.Push(entry)
+}
+
+func (e *Explorer) Up() {
+	e.ctx.Pop()
+	e.jumpTo()
 }
 
 // Returns a list of all CUs in this file
