@@ -2,7 +2,6 @@ package explorer_test
 
 import (
 	"testing"
-	// "debug/dwarf"
 
 	"github.com/stretchr/testify/assert"
 

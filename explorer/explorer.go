@@ -2,6 +2,7 @@ package explorer
 
 import (
 	"debug/dwarf"
+	"fmt"
 	"strings"
 
 	"github.com/jdginn/durins-door/client"
@@ -47,6 +48,9 @@ func (e *Explorer) SetClient(c client.Client) error {
 }
 
 func (e *Explorer) GetTypeDefProxy(name string) (*parser.TypeDefProxy, error) {
+	if e.reader == nil {
+		return nil, fmt.Errorf("Cannot get TypeDef proxies without setting a reader. Create a reader using CreateReaderFromFile().")
+	}
 	levels := strings.Split(name, "/")
 	entry, _, err := parser.GetEntry(e.reader, levels[0])
 	if err != nil {
@@ -59,19 +63,44 @@ func (e *Explorer) GetTypeDefProxy(name string) (*parser.TypeDefProxy, error) {
 	return p, nil
 }
 
+func (e *Explorer) ShowAllChildren() ([]string, error) {
+	if e.reader == nil {
+		return nil, fmt.Errorf("Cannot List CUs without setting a reader. Create a reader using CreateReaderFromFile().")
+	}
+	entries, err := parser.GetChildren(e.reader, func(entry *dwarf.Entry) bool {
+    return entry.Tag == dwarf.TagVariable
+  })
+	if err != nil {
+		return []string{}, err
+	}
+	ret := make([]string, len(entries), len(entries))
+	for i, e := range entries {
+		ret[i] = e.Val(dwarf.AttrName).(string)
+	}
+	return ret, nil
+}
+
 // Returns a list of all CUs in this file
 func (e *Explorer) ListCUs() ([]string, error) {
-  CUs, err := parser.GetCUs(e.reader)
-  ret := make([]string, len(CUs), len(CUs))
-  if err != nil { return []string{}, err }
-  for i, cu := range CUs {
-    ret[i] = cu.Val(dwarf.AttrName).(string)
-  }
-  return ret, nil
+	if e.reader == nil {
+		return nil, fmt.Errorf("Cannot List CUs without setting a reader. Create a reader using CreateReaderFromFile().")
+	}
+	CUs, err := parser.GetCUs(e.reader)
+	if err != nil {
+		return []string{}, err
+	}
+	ret := make([]string, len(CUs), len(CUs))
+	for i, cu := range CUs {
+		ret[i] = cu.Val(dwarf.AttrName).(string)
+	}
+	return ret, nil
 }
 
 // Returns a VariableProxy to work with
 func (e *Explorer) GetVariableProxy(name string) (*parser.VariableProxy, error) {
+	if e.reader == nil {
+		return nil, fmt.Errorf("Cannot get Variable proxies without setting a reader. Create a reader using CreateReaderFromFile().")
+	}
 	levels := strings.Split(name, "/")
 	entry, cu, err := parser.GetEntry(e.reader, levels[0])
 	offset := int64(cu.AttrField(dwarf.AttrLowpc).Val.(uint64))
