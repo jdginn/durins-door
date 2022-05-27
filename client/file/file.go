@@ -20,8 +20,8 @@ func New(f *os.File) (*FileClient, error) {
 func NewFromPath(filename string) (*FileClient, error) {
 	f, err := os.OpenFile(filename, os.O_RDWR, 0777)
 	if err != nil {
-    wd, _ := os.Getwd()
-    return &FileClient{}, fmt.Errorf("Could not open file %s:\n\ncwd:  %s\n\nerror message:\n\t%s", filename, wd, err)
+		wd, _ := os.Getwd()
+		return &FileClient{}, fmt.Errorf("Could not open file %s:\n\ncwd:  %s\n\nerror message:\n\t%s", filename, wd, err)
 	}
 	fw := &FileClient{
 		rw:     f,
@@ -37,7 +37,7 @@ func (p *FileClient) SetOffset(offset int64) {
 
 func (p *FileClient) Read(addr int, size int) ([]byte, error) {
 	val := make([]byte, size)
-  relAddr := int64(addr) - p.offset
+	relAddr := int64(addr) - p.offset
 	n, err := p.rw.ReadAt(val, relAddr)
 	if err != nil {
 		return val, err
@@ -49,7 +49,7 @@ func (p *FileClient) Read(addr int, size int) ([]byte, error) {
 }
 
 func (p *FileClient) Write(addr int, data []byte) error {
-  relAddr := int64(addr) - p.offset
+	relAddr := int64(addr) - p.offset
 	_, err := p.rw.WriteAt(data, relAddr)
 	return err
 }
