@@ -5,3 +5,6 @@ testcase:
 
 check: testcase
 	go test ./...
+
+verify-commits: testcase
+	bash ci/verify_commits.sh
