@@ -21,12 +21,13 @@ func GetReader[T DebugFile](fh T) (*dwarf.Reader, error) {
 }
 
 func GetCUs(r *dwarf.Reader) ([]*dwarf.Entry, error) {
-	return GetChildren(r, func(e *dwarf.Entry) bool{
-    return e.Tag == dwarf.TagCompileUnit
-  })
+	return GetChildren(r, func(e *dwarf.Entry) bool {
+		return e.Tag == dwarf.TagCompileUnit
+	})
 }
 
-// Return a slice of all child entries of the current entry
+// Return a slice of all child entries of the current entry filteed by
+// a passed function
 //
 // TODO: this doesn't seem to work yet
 func GetChildren(r *dwarf.Reader, f func(*dwarf.Entry) bool) ([]*dwarf.Entry, error) {
@@ -41,9 +42,9 @@ func GetChildren(r *dwarf.Reader, f func(*dwarf.Entry) bool) ([]*dwarf.Entry, er
 		if entry == nil {
 			return entries, nil
 		}
-    if f(entry) {
-      entries = append(entries, entry)
-    }
+		if f(entry) {
+			entries = append(entries, entry)
+		}
 	}
 }
 
