@@ -108,31 +108,31 @@ func TestListAllAttributes(t *testing.T) {
 func TestGetEntriesOnLevel(t *testing.T) {
 	reader, _ := getReaderFromFile(testcaseFilename)
 	entries, err := GetChildren(reader, func(*dwarf.Entry) bool {
-    return true
-  })
+		return true
+	})
 	assert.NoError(t, err)
 	fmt.Println(entries)
 	assert.Equal(t, 1, len(entries))
 
-  _, _, err = GetEntry(reader, "formula_1_teams")
+	_, _, err = GetEntry(reader, "formula_1_teams")
 	entries, err = GetChildren(reader, func(e *dwarf.Entry) bool {
-    return e.Tag == dwarf.TagVariable
-  })
+		return e.Tag == dwarf.TagVariable
+	})
 	assert.NoError(t, err)
-  fmt.Printf("Entries:\n")
-  for _, e := range entries {
-    fmt.Printf("\t%s\n", e.Val(dwarf.AttrName))
-  }
+	fmt.Printf("Entries:\n")
+	for _, e := range entries {
+		fmt.Printf("\t%s\n", e.Val(dwarf.AttrName))
+	}
 
-  _, _, err = GetEntry(reader, "mercedes")
+	_, _, err = GetEntry(reader, "mercedes")
 	entries, err = GetChildren(reader, func(e *dwarf.Entry) bool {
-    return e.Tag == dwarf.TagVariable
-  })
+		return e.Tag == dwarf.TagVariable
+	})
 	assert.NoError(t, err)
-  fmt.Printf("Entries:\n")
-  for _, e := range entries {
-    fmt.Printf("\t%s\n", e.Val(dwarf.AttrName))
-  }
+	fmt.Printf("Entries:\n")
+	for _, e := range entries {
+		fmt.Printf("\t%s\n", e.Val(dwarf.AttrName))
+	}
 }
 
 func TestGetCUs(t *testing.T) {
