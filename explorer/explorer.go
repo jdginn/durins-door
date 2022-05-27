@@ -24,10 +24,12 @@ func NewExplorer() *Explorer {
 	}
 }
 
-func (c Explorer) jumpTo() {
-  if len(c.ctx.levels) > 0 {
-    c.reader.Seek(c.ctx.levels[len(c.ctx.levels)-1].Offset)
-  }
+func (e Explorer) CurrEntryName() string {
+	entry, ok := e.ctx.CurrEntry()
+	if !ok {
+		return "Top level"
+	}
+	return entry.Val(dwarf.AttrName).(string)
 }
 
 // Creates a reader within this explorer, reading the specified file
@@ -97,9 +99,32 @@ func (e *Explorer) StepIntoChild(childName string) {
 	e.ctx.Push(entry)
 }
 
-func (e *Explorer) Up() {
-	e.ctx.Pop()
-	e.jumpTo()
+func (e *Explorer) GetType() {
+	entry, ok := e.ctx.CurrEntry()
+	if ok {
+		typeEntry, err := parser.GetTypeEntry(e.reader, entry)
+		if err != nil {
+			panic(err)
+		}
+		e.ctx.Push(typeEntry)
+	}
+}
+
+func (e *Explorer) Up() bool {
+	entry, ok := e.ctx.Pop()
+	if ok {
+		e.reader.Seek(entry.Offset)
+	}
+	return ok
+}
+
+func (e *Explorer) Info() string {
+	entry, ok := e.ctx.CurrEntry()
+	if !ok {
+		return "Top level: no info to show"
+	}
+	return parser.FormatEntryInfo(entry)
+
 }
 
 // Returns a list of all CUs in this file
