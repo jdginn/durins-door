@@ -76,13 +76,13 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 	}
 
 	// The offset into the struct is defined by the member, not its type
-	if hasAttr(e, dwarf.AttrDataMemberLoc) {
+	if HasAttr(e, dwarf.AttrDataMemberLoc) {
 		proxy.StructOffset = int(e.Val(dwarf.AttrDataMemberLoc).(int64)) * 8
 	}
 
 	// TODO: this probably needs an else case where we compute size from walking
 	// the typedef, which we will do anyway.
-	if hasAttr(typeEntry, dwarf.AttrByteSize) || hasAttr(typeEntry, dwarf.AttrBitSize) {
+	if HasAttr(typeEntry, dwarf.AttrByteSize) || HasAttr(typeEntry, dwarf.AttrBitSize) {
 		var bitSize int
 		bitSize, err = GetBitSize(typeEntry)
 		proxy.BitSize = bitSize

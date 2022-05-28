@@ -29,6 +29,9 @@ func (e Explorer) CurrEntryName() string {
 	if !ok {
 		return "Top level"
 	}
+	if !parser.HasAttr(entry, dwarf.AttrName) {
+		return "unnamed entry"
+	}
 	return entry.Val(dwarf.AttrName).(string)
 }
 
