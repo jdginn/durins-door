@@ -61,14 +61,13 @@ func (e *Explorer) SetClient(c client.Client) error {
 	return nil
 }
 
-func (e *Explorer) GetTypeDefProxy(name string) (*parser.TypeDefProxy, error) {
+func (e *Explorer) GetTypeDefProxy() (*parser.TypeDefProxy, error) {
 	if e.reader == nil {
 		return nil, fmt.Errorf("Cannot get TypeDef proxies without setting a reader. Create a reader using CreateReaderFromFile().")
 	}
-	levels := strings.Split(name, "/")
-	entry, _, err := parser.GetEntry(e.reader, levels[0])
-	if err != nil {
-		return nil, err
+	entry, ok := e.ctx.CurrEntry()
+	if !ok {
+		return nil, fmt.Errorf("Could not find current entry")
 	}
 	p, err := parser.NewTypeDefProxy(e.reader, entry)
 	if err != nil {
@@ -100,17 +99,6 @@ func (e *Explorer) StepIntoChild(childName string) {
 		panic(err)
 	}
 	e.ctx.Push(entry)
-}
-
-func (e *Explorer) GetType() {
-	entry, ok := e.ctx.CurrEntry()
-	if ok {
-		typeEntry, err := parser.GetTypeEntry(e.reader, entry)
-		if err != nil {
-			panic(err)
-		}
-		e.ctx.Push(typeEntry)
-	}
 }
 
 func (e *Explorer) Up() bool {
