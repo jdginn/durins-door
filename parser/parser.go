@@ -101,9 +101,9 @@ func GetEntry(r *dwarf.Reader, name string) (*dwarf.Entry, *dwarf.Entry, error) 
 
 // Finds the size of the type defined by this entry, in bits
 func GetBitSize(entry *dwarf.Entry) (int, error) {
-	if hasAttr(entry, dwarf.AttrBitSize) {
+	if HasAttr(entry, dwarf.AttrBitSize) {
 		return entry.Val(dwarf.AttrBitSize).(int), nil
-	} else if hasAttr(entry, dwarf.AttrByteSize) {
+	} else if HasAttr(entry, dwarf.AttrByteSize) {
 		return int(entry.Val(dwarf.AttrByteSize).(int64) * 8), nil
 	} else {
 		return 0, errors.New(fmt.Sprintf("Could not get bit size of entry:\n%v", FormatEntryInfo(entry)))
@@ -131,7 +131,7 @@ func GetArrayRanges(r *dwarf.Reader, entry *dwarf.Entry) ([]int, error) {
 			break
 		}
 
-		if hasAttr(subrange, dwarf.AttrCount) {
+		if HasAttr(subrange, dwarf.AttrCount) {
 			ranges = append(ranges, int(subrange.Val(dwarf.AttrCount).(int64)))
 		}
 	}
@@ -198,7 +198,7 @@ func ListAllAttributes(entry *dwarf.Entry) {
 }
 
 // Return true if this entry contains the requested attribute
-func hasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
+func HasAttr(entry *dwarf.Entry, attr dwarf.Attr) bool {
 	for _, field := range entry.Field {
 		if field.Attr == attr {
 			return true
@@ -240,7 +240,7 @@ func ParseLocation(location []uint8) int {
 func GetTypeEntry(reader *dwarf.Reader, entry *dwarf.Entry) (*dwarf.Entry, error) {
 
 	var err error = nil
-	if !hasAttr(entry, dwarf.AttrType) {
+	if !HasAttr(entry, dwarf.AttrType) {
 		// fmt.Printf("Entry %v does not have a type entry - returning it as-is\n", entry.Val(dwarf.AttrName))
 		return entry, nil
 	}
