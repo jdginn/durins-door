@@ -135,6 +135,16 @@ func (p *TypeDefProxy) GoString() string {
 	return p.string()
 }
 
+// Retuns a slice of strings containing the name of each member of this TypeDef
+func (p *TypeDefProxy) ListChildren() []string {
+	names := make([]string, len(p.Children))
+	for i, c := range p.Children {
+		names[i] = c.Name
+	}
+	return names
+}
+
+// Returns the TypeDefProxy for a member of this TypeDef by name
 func (p *TypeDefProxy) GetChild(childName string) (*TypeDefProxy, error) {
 	for _, c := range p.Children {
 		if c.Name == childName {
