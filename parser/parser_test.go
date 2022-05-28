@@ -33,31 +33,30 @@ func TestGetReaderFromFile(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func testGetEntry(t *testing.T, requestedName string) *dwarf.Entry {
-	reader, _ := getReaderFromFile(testcaseFilename)
-	entry, _, err := GetEntry(reader, requestedName)
+func testGetEntry(t *testing.T, r *dwarf.Reader, requestedName string) *dwarf.Entry {
+	entry, _, err := GetEntry(r, requestedName)
 	assert.NoError(t, err)
 	assert.Equal(t, entry.Val(dwarf.AttrName), requestedName)
 	return entry
 }
 
-func shouldFailGetEntry(t *testing.T, requestedName string, errorString string) {
-	reader, _ := getReaderFromFile(testcaseFilename)
-	_, _, err := GetEntry(reader, requestedName)
+func shouldFailGetEntry(t *testing.T, r *dwarf.Reader, requestedName string, errorString string) {
+	_, _, err := GetEntry(r, requestedName)
 	assert.Error(t, err)
 }
 
 func TestGetEntry(t *testing.T) {
-	testGetEntry(t, "formula_1_teams")
-	testGetEntry(t, "testcase.cpp")
-	testGetEntry(t, "Driver")
-	testGetEntry(t, "Driver")
-	shouldFailGetEntry(t, "badname", "entry could not be found")
+	reader, _ := getReaderFromFile(testcaseFilename)
+	testGetEntry(t, reader, "formula_1_teams")
+	testGetEntry(t, reader, "testcase.cpp")
+	testGetEntry(t, reader, "Driver")
+	testGetEntry(t, reader, "Driver")
+	shouldFailGetEntry(t, reader, "badname", "entry could not be found")
 }
 
 func testGetTypeEntry(t *testing.T, reader *dwarf.Reader, entryName string) *dwarf.Entry {
 	entry, _, err := GetEntry(reader, entryName)
-  assert.NoError(t, err)
+	assert.NoError(t, err)
 	if entry == nil {
 		t.Fatal("Failed to retrieve entry " + entryName)
 	}
@@ -75,7 +74,7 @@ func TestGetTypeEntry(t *testing.T) {
 	reader, _ := getReaderFromFile(testcaseFilename)
 	var e *dwarf.Entry
 	e = testGetTypeEntry(t, reader, "formula_1_teams")
-  assert.NotNil(t, e)
+	assert.NotNil(t, e)
 	assert.Equal(t, e.Tag, dwarf.TagArrayType)
 	e = testGetTypeEntry(t, reader, "drivers")
 	assert.Equal(t, e.Tag, dwarf.TagArrayType)
