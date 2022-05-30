@@ -16,11 +16,11 @@ import (
 // All relevant DWARF parsing is handled when this proxy is created and no intermediate
 // DWARF data is included here. The proxy should be ready to hand off as-is to a user.
 type TypeDefProxy struct {
-	Name         string
-	BitSize      int
-	StructOffset int
-	ArrayRanges  []int
-	Children     []TypeDefProxy
+	name         string
+	bitSize      int
+	structOffset int
+	arrayRanges  []int
+	ahildren     []TypeDefProxy
 }
 
 // Construct a new TypeDefProxy
@@ -66,16 +66,16 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 
 	// TODO: handle the situation where we have no AttrName
 	proxy := &TypeDefProxy{
-		Name:         name,
-		BitSize:      0,
-		StructOffset: 0,
-		ArrayRanges:  arrayRanges,
-		Children:     make([]TypeDefProxy, 0),
+		name:         name,
+		bitSize:      0,
+		structOffset: 0,
+		arrayRanges:  arrayRanges,
+		ahildren:     make([]TypeDefProxy, 0),
 	}
 
 	// The offset into the struct is defined by the member, not its type
 	if HasAttr(e, dwarf.AttrDataMemberLoc) {
-		proxy.StructOffset = int(e.Val(dwarf.AttrDataMemberLoc).(int64)) * 8
+		proxy.structOffset = int(e.Val(dwarf.AttrDataMemberLoc).(int64)) * 8
 	}
 
 	// TODO: this probably needs an else case where we compute size from walking
@@ -83,7 +83,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 	if HasAttr(typeEntry, dwarf.AttrByteSize) || HasAttr(typeEntry, dwarf.AttrBitSize) {
 		var bitSize int
 		bitSize, err = GetBitSize(typeEntry)
-		proxy.BitSize = bitSize
+		proxy.bitSize = bitSize
 	}
 
 	// TODO: split this into its own method
@@ -112,7 +112,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 				panic(err)
 			}
 			// TODO: is this the right way to do this in go?
-			proxy.Children = append(proxy.Children, *childProxy)
+			proxy.ahildren = append(proxy.ahildren, *childProxy)
 			// How do we appropriately parse this stuff without having to jump around a bunch in the reader?
 			// ^ Is jumping around in the reader expensive?
 			reader.Seek(child.Offset)
@@ -125,9 +125,13 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 	return proxy, err
 }
 
+func (p TypeDefProxy) Name() string {
+  return p.name
+}
+
 func (p *TypeDefProxy) string() string {
 	// TODO: for now, we don't print children
-	var str string = fmt.Sprintf("Typedef %s\n  BitSize: %d\n  ArrayRanges %v\n  Children %#v\n", p.Name, p.BitSize, p.ArrayRanges, p.Children)
+	var str string = fmt.Sprintf("Typedef %s\n  BitSize: %d\n  ArrayRanges %v\n  Children %#v\n", p.name, p.bitSize, p.arrayRanges, p.ahildren)
 	return str
 }
 
@@ -136,18 +140,18 @@ func (p *TypeDefProxy) GoString() string {
 }
 
 // Retuns a slice of strings containing the name of each member of this TypeDef
-func (p *TypeDefProxy) ListChildren() []string {
-	names := make([]string, len(p.Children))
-	for i, c := range p.Children {
-		names[i] = c.Name
+func (p TypeDefProxy) ListChildren() []string {
+	names := make([]string, len(p.ahildren))
+	for i, c := range p.ahildren {
+		names[i] = c.name
 	}
 	return names
 }
 
 // Returns the TypeDefProxy for a member of this TypeDef by name
-func (p *TypeDefProxy) GetChild(childName string) (*TypeDefProxy, error) {
-	for _, c := range p.Children {
-		if c.Name == childName {
+func (p TypeDefProxy) GetChild(childName string) (*TypeDefProxy, error) {
+	for _, c := range p.ahildren {
+		if c.name == childName {
 			return &c, nil
 		}
 	}

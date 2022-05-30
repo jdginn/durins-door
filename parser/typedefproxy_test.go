@@ -17,9 +17,9 @@ func TestNewTypeDefProxy(t *testing.T) {
 	assert.Equal(t, nil, err)
 	driverProxy, err := NewTypeDefProxy(reader, e)
 	assert.NoError(t, err)
-	assert.Equal(t, "char", driverProxy.Name)
-	assert.Equal(t, int(8), driverProxy.BitSize)
-	assert.Equal(t, make([]TypeDefProxy, 0), driverProxy.Children)
+	assert.Equal(t, "char", driverProxy.name)
+	assert.Equal(t, int(8), driverProxy.bitSize)
+	assert.Equal(t, make([]TypeDefProxy, 0), driverProxy.ahildren)
 
 	// Move on to non-trivial cases in which Children must actually be populated
 	e, _, err = GetEntry(reader, "Driver")
@@ -30,30 +30,30 @@ func TestNewTypeDefProxy(t *testing.T) {
 	// being only 1 byte
 	var driverChildren = []TypeDefProxy{
 		{
-			Name:         "initials",
-			BitSize:      8,
-			StructOffset: 0,
-			ArrayRanges:  []int{2},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "initials",
+			bitSize:      8,
+			structOffset: 0,
+			arrayRanges:  []int{2},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "car_number",
-			BitSize:      32,
-			StructOffset: 32,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "car_number",
+			bitSize:      32,
+			structOffset: 32,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "has_won_wdc",
-			BitSize:      8,
-			StructOffset: 64,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "has_won_wdc",
+			bitSize:      8,
+			structOffset: 64,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 	}
-	assert.Equal(t, "Driver", driverProxy.Name)
-	assert.Equal(t, int(12*8), driverProxy.BitSize)
-	assert.Equal(t, driverChildren, driverProxy.Children)
+	assert.Equal(t, "Driver", driverProxy.name)
+	assert.Equal(t, int(12*8), driverProxy.bitSize)
+	assert.Equal(t, driverChildren, driverProxy.ahildren)
 
 	// A type that includes the type from the previous test
 	e, _, err = GetEntry(reader, "Team")
@@ -63,52 +63,52 @@ func TestNewTypeDefProxy(t *testing.T) {
 
 	var teamChildren = []TypeDefProxy{
 		{
-			Name:         "drivers",
-			BitSize:      96,
-			StructOffset: 0,
-			ArrayRanges:  []int{2},
-			Children:     driverProxy.Children,
+			name:         "drivers",
+			bitSize:      96,
+			structOffset: 0,
+			arrayRanges:  []int{2},
+			ahildren:     driverProxy.ahildren,
 		},
 		{
-			Name:         "sponsors",
-			BitSize:      16,
-			StructOffset: 192,
-			ArrayRanges:  []int{4},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "sponsors",
+			bitSize:      16,
+			structOffset: 192,
+			arrayRanges:  []int{4},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "has_won_wdc",
-			BitSize:      8,
-			StructOffset: 256,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "has_won_wdc",
+			bitSize:      8,
+			structOffset: 256,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "last_wdc",
-			BitSize:      32,
-			StructOffset: 288,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "last_wdc",
+			bitSize:      32,
+			structOffset: 288,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "has_won_wcc",
-			BitSize:      8,
-			StructOffset: 320,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "has_won_wcc",
+			bitSize:      8,
+			structOffset: 320,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "last_wcc",
-			BitSize:      32,
-			StructOffset: 352,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "last_wcc",
+			bitSize:      32,
+			structOffset: 352,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 	}
 
-	assert.Equal(t, "Team", teamProxy.Name)
-	assert.Equal(t, int(384), teamProxy.BitSize)
-	assert.Equal(t, teamChildren, teamProxy.Children)
+	assert.Equal(t, "Team", teamProxy.name)
+	assert.Equal(t, int(384), teamProxy.bitSize)
+	assert.Equal(t, teamChildren, teamProxy.ahildren)
 }
 
 func TestTypeDefProxyGetChild(t *testing.T) {
@@ -121,10 +121,10 @@ func TestTypeDefProxyGetChild(t *testing.T) {
 	assert.NoError(t, err)
 	initialsProxy, err := driverProxy.GetChild("initials")
 	assert.NoError(t, err)
-	assert.Equal(t, "initials", initialsProxy.Name)
-	assert.Equal(t, int(8), initialsProxy.BitSize)
-	assert.Equal(t, int(0), initialsProxy.StructOffset)
-	assert.Equal(t, []int{2}, initialsProxy.ArrayRanges)
+	assert.Equal(t, "initials", initialsProxy.name)
+	assert.Equal(t, int(8), initialsProxy.bitSize)
+	assert.Equal(t, int(0), initialsProxy.structOffset)
+	assert.Equal(t, []int{2}, initialsProxy.arrayRanges)
 
 	// Navigate two levels down
 	e, _, err = GetEntry(reader, "Team")
@@ -133,14 +133,14 @@ func TestTypeDefProxyGetChild(t *testing.T) {
 	assert.NoError(t, err)
 	driverProxy, err = teamProxy.GetChild("drivers")
 	assert.NoError(t, err)
-	assert.Equal(t, "drivers", driverProxy.Name)
-	assert.Equal(t, int(12*8), driverProxy.BitSize)
-	assert.Equal(t, int(0), driverProxy.StructOffset)
-	assert.Equal(t, []int{2}, driverProxy.ArrayRanges)
+	assert.Equal(t, "drivers", driverProxy.name)
+	assert.Equal(t, int(12*8), driverProxy.bitSize)
+	assert.Equal(t, int(0), driverProxy.structOffset)
+	assert.Equal(t, []int{2}, driverProxy.arrayRanges)
 	initialsProxy, err = driverProxy.GetChild("initials")
 	assert.NoError(t, err)
-	assert.Equal(t, "initials", initialsProxy.Name)
-	assert.Equal(t, int(8), initialsProxy.BitSize)
-	assert.Equal(t, int(0), initialsProxy.StructOffset)
-	assert.Equal(t, []int{2}, initialsProxy.ArrayRanges)
+	assert.Equal(t, "initials", initialsProxy.name)
+	assert.Equal(t, int(8), initialsProxy.bitSize)
+	assert.Equal(t, int(0), initialsProxy.structOffset)
+	assert.Equal(t, []int{2}, initialsProxy.arrayRanges)
 }

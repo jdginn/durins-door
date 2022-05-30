@@ -21,110 +21,110 @@ func TestNewVariableProxy(t *testing.T) {
 	// TestNewTypeDefProxy
 	var driverChildren = []TypeDefProxy{
 		{
-			Name:         "initials",
-			BitSize:      8,
-			StructOffset: 0,
-			ArrayRanges:  []int{2},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "initials",
+			bitSize:      8,
+			structOffset: 0,
+			arrayRanges:  []int{2},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "car_number",
-			BitSize:      32,
-			StructOffset: 32,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "car_number",
+			bitSize:      32,
+			structOffset: 32,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "has_won_wdc",
-			BitSize:      8,
-			StructOffset: 64,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "has_won_wdc",
+			bitSize:      8,
+			structOffset: 64,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 	}
 	var teamChildren = []TypeDefProxy{
 		{
-			Name:         "drivers",
-			BitSize:      96,
-			StructOffset: 0,
-			ArrayRanges:  []int{2},
-			Children:     driverChildren,
+			name:         "drivers",
+			bitSize:      96,
+			structOffset: 0,
+			arrayRanges:  []int{2},
+			ahildren:     driverChildren,
 		},
 		{
-			Name:         "sponsors",
-			BitSize:      16,
-			StructOffset: 192,
-			ArrayRanges:  []int{4},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "sponsors",
+			bitSize:      16,
+			structOffset: 192,
+			arrayRanges:  []int{4},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "has_won_wdc",
-			BitSize:      8,
-			StructOffset: 256,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "has_won_wdc",
+			bitSize:      8,
+			structOffset: 256,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "last_wdc",
-			BitSize:      32,
-			StructOffset: 288,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "last_wdc",
+			bitSize:      32,
+			structOffset: 288,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "has_won_wcc",
-			BitSize:      8,
-			StructOffset: 320,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "has_won_wcc",
+			bitSize:      8,
+			structOffset: 320,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 		{
-			Name:         "last_wcc",
-			BitSize:      32,
-			StructOffset: 352,
-			ArrayRanges:  []int{0},
-			Children:     make([]TypeDefProxy, 0),
+			name:         "last_wcc",
+			bitSize:      32,
+			structOffset: 352,
+			arrayRanges:  []int{0},
+			ahildren:     make([]TypeDefProxy, 0),
 		},
 	}
-	assert.Equal(t, "formula_1_teams", teamsProxy.Name)
-	assert.Equal(t, "Team", teamsProxy.Type.Name)
-	assert.Equal(t, int(384), teamsProxy.Type.BitSize)
-	assert.Equal(t, teamChildren, teamsProxy.Type.Children)
+	assert.Equal(t, "formula_1_teams", teamsProxy.name)
+	assert.Equal(t, "Team", teamsProxy.Type.name)
+	assert.Equal(t, int(384), teamsProxy.Type.bitSize)
+	assert.Equal(t, teamChildren, teamsProxy.Type.ahildren)
 }
 
 func TestGetSetVariableProxy(t *testing.T) {
 	tp := &TypeDefProxy{
-		Name:         "type",
-		BitSize:      48,
-		StructOffset: 0,
-		ArrayRanges:  []int{},
-		Children: []TypeDefProxy{
+		name:         "type",
+		bitSize:      48,
+		structOffset: 0,
+		arrayRanges:  []int{},
+		ahildren: []TypeDefProxy{
 			{
-				Name:         "foo",
-				BitSize:      8,
-				StructOffset: 0,
-				ArrayRanges:  []int{},
-				Children:     []TypeDefProxy{},
+				name:         "foo",
+				bitSize:      8,
+				structOffset: 0,
+				arrayRanges:  []int{},
+				ahildren:     []TypeDefProxy{},
 			},
 			{
-				Name:         "bar",
-				BitSize:      32,
-				StructOffset: 8,
-				ArrayRanges:  []int{},
-				Children:     []TypeDefProxy{},
+				name:         "bar",
+				bitSize:      32,
+				structOffset: 8,
+				arrayRanges:  []int{},
+				ahildren:     []TypeDefProxy{},
 			},
 			{
-				Name:         "baz",
-				BitSize:      8,
-				StructOffset: 40,
-				ArrayRanges:  []int{},
-				Children:     []TypeDefProxy{},
+				name:         "baz",
+				bitSize:      8,
+				structOffset: 40,
+				arrayRanges:  []int{},
+				ahildren:     []TypeDefProxy{},
 			},
 		},
 	}
 	byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb}
 	vp := &VariableProxy{
-		Name:    "variable",
+		name:    "variable",
 		Type:    *tp,
 		Address: 0xfeedbeef,
 		value:   byteLiteral,
@@ -185,17 +185,17 @@ func TestGetSetVariableProxy(t *testing.T) {
 
 func TestGetSetMultilevelVariableProxy(t *testing.T) {
 	tp := &TypeDefProxy{
-		Name:         "type",
-		BitSize:      48,
-		StructOffset: 0,
-		ArrayRanges:  []int{},
-		Children: []TypeDefProxy{
+		name:         "type",
+		bitSize:      48,
+		structOffset: 0,
+		arrayRanges:  []int{},
+		ahildren: []TypeDefProxy{
 			{
-				Name:         "foo",
-				BitSize:      8,
-				StructOffset: 0,
-				ArrayRanges:  []int{},
-				Children:     []TypeDefProxy{
+				name:         "foo",
+				bitSize:      8,
+				structOffset: 0,
+				arrayRanges:  []int{},
+				ahildren:     []TypeDefProxy{
 					// {
 					// 	Name:         "jonah",
 					// 	BitSize:      32,
@@ -213,24 +213,24 @@ func TestGetSetMultilevelVariableProxy(t *testing.T) {
 				},
 			},
 			{
-				Name:         "bar",
-				BitSize:      32,
-				StructOffset: 8,
-				ArrayRanges:  []int{},
-				Children:     []TypeDefProxy{},
+				name:         "bar",
+				bitSize:      32,
+				structOffset: 8,
+				arrayRanges:  []int{},
+				ahildren:     []TypeDefProxy{},
 			},
 			{
-				Name:         "baz",
-				BitSize:      8,
-				StructOffset: 40,
-				ArrayRanges:  []int{2},
-				Children:     []TypeDefProxy{},
+				name:         "baz",
+				bitSize:      8,
+				structOffset: 40,
+				arrayRanges:  []int{2},
+				ahildren:     []TypeDefProxy{},
 			},
 		},
 	}
 	byteLiteral := []byte{0xfe, 0xed, 0xbe, 0xef, 0xaa, 0xbb, 0xcc, 0xdd}
 	vp := &VariableProxy{
-		Name:    "variable",
+		name:    "variable",
 		Type:    *tp,
 		Address: 0xfeedbeef,
 		value:   byteLiteral,
