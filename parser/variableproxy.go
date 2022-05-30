@@ -21,7 +21,7 @@ import (
 // a client which addresses to read and provides a writeable stream
 // of bytes to allow the client to write the variable back to memory.
 type VariableProxy struct {
-	Name    string
+	name    string
 	Type    TypeDefProxy
 	Address int
 	value   []byte
@@ -39,7 +39,7 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 	}
 	loc, err := GetLocation(entry)
 	proxy := &VariableProxy{
-		Name:    entry.Val(dwarf.AttrName).(string),
+		name:    entry.Val(dwarf.AttrName).(string),
 		Type:    *typeDefProxy,
 		Address: ParseLocation(loc),
 		value:   []byte{},
@@ -48,32 +48,43 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 	return proxy, err
 }
 
+func (p VariableProxy) Name() string {
+  return p.name
+}
+
 func (p *VariableProxy) Init(reader *dwarf.Reader, entry *dwarf.Entry) error {
 	typeDefProxy, err := NewTypeDefProxy(reader, entry)
 	if err != nil {
 		return err
 	}
 	loc, err := GetLocation(entry)
-	p.Name = entry.Val(dwarf.AttrName).(string)
+	p.name = entry.Val(dwarf.AttrName).(string)
 	p.Type = *typeDefProxy
 	p.Address = ParseLocation(loc)
 	return err
 }
 
+// Retuns a slice of strings containing the name of each member of this TypeDef
+func (p VariableProxy) ListChildren() []string {
+	names := make([]string, len(p.Type.ahildren))
+	for i, c := range p.Type.ahildren {
+		names[i] = c.name
+	}
+	return names
+}
+
 // TODO: change the child hierarchy to use ordered maps not slices for lookup speed?
-func (p *VariableProxy) GetChild(childName string) (*TypeDefProxy, error) {
-	var err error
-	typeDef := p.Type
-	for _, child := range typeDef.Children {
-		if child.Name == childName {
-			return &child, err
+func (p VariableProxy) GetChild(childName string) (*TypeDefProxy, error) {
+	for _, child := range p.Type.ahildren {
+		if child.name == childName {
+			return &child, nil
 		}
 	}
 	return nil, fmt.Errorf("Could not find child %s for %s", childName, p.GoString())
 }
 
 func (p *VariableProxy) string() string {
-	var str string = fmt.Sprintf("Variable %s at address %x of type:\n%v", p.Name, p.Address, p.Type.string())
+	var str string = fmt.Sprintf("Variable %s at address %x of type:\n%v", p.name, p.Address, p.Type.string())
 	return str
 }
 
@@ -89,8 +100,8 @@ func (p *VariableProxy) GoString() string {
 // we can access fields as required.
 func (p *VariableProxy) Set(value []byte) error {
 	var err error = nil
-	if len(value)*8 > p.Type.BitSize {
-		err = fmt.Errorf("Attempted to set value size %d bits, larger than type with size %d bits", len(value)*8, p.Type.BitSize)
+	if len(value)*8 > p.Type.bitSize {
+		err = fmt.Errorf("Attempted to set value size %d bits, larger than type with size %d bits", len(value)*8, p.Type.bitSize)
 	}
 	p.value = value
 	return err
@@ -106,10 +117,10 @@ func (p *VariableProxy) SetField(field string, value int) error {
 	if err != nil {
 		return err
 	}
-	startIndex := fieldEntry.StructOffset / 8
-	n := fieldEntry.BitSize / 8
+	startIndex := fieldEntry.structOffset / 8
+	n := fieldEntry.bitSize / 8
 	// TODO: surely there is a mroe elegant way
-	if fieldEntry.BitSize%8 != 0 {
+	if fieldEntry.bitSize%8 != 0 {
 		n += 1
 	}
 	for i := 0; i < n; i++ {
@@ -167,11 +178,11 @@ func (p *VariableProxy) GetField(field string) (int, error) {
 	if p.value == nil {
 		err = fmt.Errorf("Proxy has no internal data to get")
 	}
-	startByte := fieldEntry.StructOffset / 8
-	byteLen := fieldEntry.BitSize / 8
+	startByte := fieldEntry.structOffset / 8
+	byteLen := fieldEntry.bitSize / 8
 	endByte := startByte + byteLen - 1
 	if len(p.value) < (startByte + byteLen) {
-		err = fmt.Errorf("Internal data len %d bytes is smaller than the requested field %s at bytes %d:%d", len(p.value), fieldEntry.Name, startByte, endByte)
+		err = fmt.Errorf("Internal data len %d bytes is smaller than the requested field %s at bytes %d:%d", len(p.value), fieldEntry.name, startByte, endByte)
 		return 0, err
 	}
 	valInt := 0
@@ -192,7 +203,7 @@ func (p *VariableProxy) Read() error {
 		return fmt.Errorf("Cannot read proxy %s: no client is set!", p.string())
 	}
 	// TODO: what if this isn't byte-aligned?
-	data, err := p.client.Read(p.Address, p.Type.BitSize/8)
+	data, err := p.client.Read(p.Address, p.Type.bitSize/8)
 	if err != nil {
 		return err
 	}
