@@ -4,7 +4,6 @@ import (
 	"debug/dwarf"
 	"fmt"
 	// "log"
-	"strings"
 
 	"github.com/jdginn/durins-door/client"
 	"github.com/jdginn/durins-door/explorer/plat"
@@ -16,7 +15,7 @@ type Explorer struct {
 	DwarfFile string
 	reader    *dwarf.Reader
 	client    client.Client
-	ctx       stack
+	ctx       *stack
 }
 
 // Returns a new explorer struct with sane defaults
@@ -208,24 +207,4 @@ func (e *Explorer) ListCUs() ([]string, error) {
 		ret[i] = cu.Val(dwarf.AttrName).(string)
 	}
 	return ret, nil
-}
-
-// Returns a VariableProxy to work with
-func (e *Explorer) GetVariableProxy(name string) (*parser.VariableProxy, error) {
-	if e.reader == nil {
-		return nil, fmt.Errorf("Cannot get Variable proxies without setting a reader. Create a reader using CreateReaderFromFile().")
-	}
-	levels := strings.Split(name, "/")
-	entry, cu, err := parser.GetEntry(e.reader, levels[0])
-	offset := int64(cu.AttrField(dwarf.AttrLowpc).Val.(uint64))
-	e.client.SetOffset(offset)
-	if err != nil {
-		return nil, err
-	}
-	p, err := parser.NewVariableProxy(e.reader, entry)
-	if err != nil {
-		return nil, err
-	}
-	p.SetClient(e.client)
-	return p, nil
 }
