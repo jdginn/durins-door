@@ -126,7 +126,7 @@ func NewTypeDefProxy(reader *dwarf.Reader, e *dwarf.Entry) (*TypeDefProxy, error
 }
 
 func (p TypeDefProxy) Name() string {
-  return p.name
+	return p.name
 }
 
 func (p *TypeDefProxy) string() string {

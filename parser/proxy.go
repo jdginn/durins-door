@@ -1,10 +1,9 @@
 package parser
 
-import (
-)
+import ()
 
 type Proxy interface {
-  Name() string
-  ListChildren() []string
-  GetChild(childName string) (*TypeDefProxy, error)
+	Name() string
+	ListChildren() []string
+	GetChild(childName string) (*TypeDefProxy, error)
 }

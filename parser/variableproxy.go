@@ -49,7 +49,7 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 }
 
 func (p VariableProxy) Name() string {
-  return p.name
+	return p.name
 }
 
 func (p *VariableProxy) Init(reader *dwarf.Reader, entry *dwarf.Entry) error {
