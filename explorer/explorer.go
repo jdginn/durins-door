@@ -19,6 +19,7 @@ type Explorer struct {
 	ctx       stack
 }
 
+// Returns a new explorer struct with sane defaults
 func NewExplorer() *Explorer {
 	return &Explorer{
 		ctx: NewStack(),
@@ -40,6 +41,7 @@ func (e *Explorer) CreateReaderFromFile(fname string) error {
 	return nil
 }
 
+// Returns a new explorer with reader set to the specified file
 func NewExplorerFromFile(fname string) *Explorer {
 	e := NewExplorer()
 	err := e.CreateReaderFromFile(fname)
@@ -49,6 +51,7 @@ func NewExplorerFromFile(fname string) *Explorer {
 	return e
 }
 
+// Returns a slice containing the names of each child of this Entry
 func (e *Explorer) listEntryChildren() []string {
 	entries, err := parser.GetChildren(e.reader, func(entry *dwarf.Entry) bool {
 		return (entry.Tag == dwarf.TagVariable || entry.Tag == dwarf.TagCompileUnit)
@@ -63,6 +66,7 @@ func (e *Explorer) listEntryChildren() []string {
 	return ret
 }
 
+// Returns a slice containing the names of each child of the current item
 func (e *Explorer) ListChildren() []string {
 	switch e.ctx.CurrMode() {
 	case modeCUs:
@@ -77,6 +81,7 @@ func (e *Explorer) ListChildren() []string {
 	}
 }
 
+// Returns a string representation of the curent mode
 func (e *Explorer) CurrMode() string {
 	switch e.ctx.CurrMode() {
 	case modeCUs:
@@ -89,6 +94,7 @@ func (e *Explorer) CurrMode() string {
 	return "bad mode"
 }
 
+// Returns the name of the current item
 func (e *Explorer) CurrName() string {
 	switch e.ctx.CurrMode() {
 	case modeCUs:
@@ -102,6 +108,9 @@ func (e *Explorer) CurrName() string {
 	}
 }
 
+// Moves the context to the specified child of the current item
+//
+// Child is specified by name
 func (e *Explorer) StepIntoChild(childName string) error {
 	switch e.ctx.CurrMode() {
 	case modeCUs:
@@ -134,6 +143,7 @@ func (e *Explorer) StepIntoChild(childName string) error {
 	}
 }
 
+// Moves the context to the previous item
 func (e *Explorer) Back() error {
 	e.ctx.Pop()
 	if e.ctx.CurrMode() == modeEntry {
@@ -142,6 +152,11 @@ func (e *Explorer) Back() error {
 	return nil
 }
 
+// Moves the context to the applicable TypeDef proxy
+//
+// Creates a TypeDefProxy from the current item if it is either an
+// entry or a VariableProxy. No action if the current item is already a
+// TypeDefProxy.
 func (e *Explorer) GetType() error {
 	switch e.ctx.CurrProxy().(type) {
 	// If we are already looking at a typeDef, there is nothing to do
@@ -152,6 +167,7 @@ func (e *Explorer) GetType() error {
 	return nil
 }
 
+// Creates the proxy corresponding to the passed entry
 func (e *Explorer) getProxy(entry *dwarf.Entry) (parser.Proxy, error) {
 	switch entry.Tag {
 	case dwarf.TagVariable:
@@ -163,30 +179,19 @@ func (e *Explorer) getProxy(entry *dwarf.Entry) (parser.Proxy, error) {
 	}
 }
 
-// func (e *Explorer) GetTypeDefProxy() (*parser.TypeDefProxy, error) {
-// 	if e.reader == nil {
-// 		return nil, fmt.Errorf("Cannot get TypeDef proxies without setting a reader. Create a reader using CreateReaderFromFile().")
-// 	}
-// 	entry := e.ctx.CurrEntry()
-// 	p, err := parser.NewTypeDefProxy(e.reader, entry)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return p, nil
-// }
-
 func (e *Explorer) Up() bool {
-	c, ok := e.ctx.Pop()
-	if ok {
-		e.reader.Seek(c.entry.Offset)
-	}
-	return ok
+	panic("explorer.Up() not implemented yet")
 }
 
+// Returns a string representing key info about the current entry, if there is one
 func (e *Explorer) Info() string {
-	entry := e.ctx.CurrEntry()
-	return parser.FormatEntryInfo(entry)
-
+	switch e.ctx.CurrMode() {
+	case modeCUs, modeEntry:
+		entry := e.ctx.CurrEntry()
+		return parser.FormatEntryInfo(entry)
+	default:
+		return ""
+	}
 }
 
 // Returns a list of all CUs in this file
