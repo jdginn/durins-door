@@ -26,9 +26,9 @@ type stack struct {
 	levels []ctxLevel
 }
 
-func NewStack() stack {
+func NewStack() *stack {
 	// s := stack{sync.Mutex{}, make([]ctxLevel, 0, 128)}
-	s := stack{make([]ctxLevel, 0, 128)}
+	s := &stack{make([]ctxLevel, 0, 128)}
 	s.Push(modeCUs, nil, nil)
 	return s
 }
