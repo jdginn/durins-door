@@ -6,14 +6,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/jdginn/durins-door/client"
-	"github.com/jdginn/durins-door/client/file"
+	"github.com/jdginn/durins-door/memoryview"
+	"github.com/jdginn/durins-door/memoryview/file"
 )
 
 var testcaseDwarfFile = "../../testcase-compiler/testcase.dwarf"
 var testcaseBinFile = "../../testcase-compiler/testcase.out"
 
-func wantsClient(c client.Client) {}
+func wantsClient(c memoryview.MemoryView) {}
 
 func TestInterfaceMembership(t *testing.T) {
 	dummy, err := file.NewFromPath(testcaseBinFile)

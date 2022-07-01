@@ -5,7 +5,7 @@ import (
 	"fmt"
 	// "strings"
 
-	"github.com/jdginn/durins-door/client"
+	m "github.com/jdginn/durins-door/memoryview"
 )
 
 // Represents a variable and facilitates interacting with that
@@ -25,7 +25,7 @@ type VariableProxy struct {
 	Type    TypeDefProxy
 	Address int
 	value   []byte
-	client  client.Client
+	mv      m.MemoryView
 }
 
 // Construct a new VariableProxy for a variable known to the DWARF
@@ -43,7 +43,7 @@ func NewVariableProxy(reader *dwarf.Reader, entry *dwarf.Entry) (*VariableProxy,
 		Type:    *typeDefProxy,
 		Address: ParseLocation(loc),
 		value:   []byte{},
-		client:  nil,
+		mv:      nil,
 	}
 	return proxy, err
 }
@@ -194,16 +194,16 @@ func (p *VariableProxy) GetField(field string) (int, error) {
 	return valInt, err
 }
 
-func (p *VariableProxy) SetClient(c client.Client) {
-	p.client = c
+func (p *VariableProxy) SetClient(m m.MemoryView) {
+	p.mv = m
 }
 
 func (p *VariableProxy) Read() error {
-	if p.client == nil {
+	if p.mv == nil {
 		return fmt.Errorf("Cannot read proxy %s: no client is set!", p.string())
 	}
 	// TODO: what if this isn't byte-aligned?
-	data, err := p.client.Read(p.Address, p.Type.bitSize/8)
+	data, err := p.mv.Read(p.Address, p.Type.bitSize/8)
 	if err != nil {
 		return err
 	}
@@ -212,8 +212,8 @@ func (p *VariableProxy) Read() error {
 }
 
 func (p *VariableProxy) Write() error {
-	if p.client == nil {
+	if p.mv == nil {
 		return fmt.Errorf("Cannot write proxy %s: no client is set!", p.string())
 	}
-	return p.client.Write(p.Address, p.value)
+	return p.mv.Write(p.Address, p.value)
 }
