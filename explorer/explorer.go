@@ -5,7 +5,6 @@ import (
 	"fmt"
 	// "log"
 
-	"github.com/jdginn/durins-door/client"
 	"github.com/jdginn/durins-door/explorer/plat"
 	"github.com/jdginn/durins-door/parser"
 )
@@ -14,7 +13,6 @@ import (
 type Explorer struct {
 	DwarfFile string
 	reader    *dwarf.Reader
-	client    client.Client
 	ctx       *stack
 }
 
